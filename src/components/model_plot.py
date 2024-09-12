@@ -22,8 +22,9 @@ class ModelRight(QWidget):
         self.last_update_time = 0
         self.update_interval = 0.2
 
-        self.train_loss = deque()
-        self.val_loss = deque()
+        self.cur_epoch = 0
+        self.train_loss = deque(maxlen=200)
+        self.val_loss = deque(maxlen=200)
 
         self.train_plot = self.set_train_plot()
         self.train_plot.setMinimumSize(QSize(450, 250))
@@ -105,6 +106,7 @@ class ModelRight(QWidget):
 
     def update_loss_canvas(self, signal: tuple, true_val):
         # 不管是否绘制，首先要更新数据
+        self.cur_epoch += 1
         self.train_loss.append(signal[3])
         self.val_loss.append(signal[4])
         self.pred = signal[6]
@@ -112,8 +114,9 @@ class ModelRight(QWidget):
         current_time = time.time()
         if current_time - self.last_update_time < self.update_interval:
             return
-        self.line_train.set_data(range(len(self.train_loss)), self.train_loss)
-        self.line_val.set_data(range(len(self.val_loss)), self.val_loss)
+        loss_x = [x+self.cur_epoch for x in range(len(self.train_loss))]
+        self.line_train.set_data(loss_x, self.train_loss)
+        self.line_val.set_data(loss_x, self.val_loss)
         self.line_pred.set_data(range(len(self.pred)), self.pred)
         self.line_true.set_data(range(len(true_val)), true_val)
 
@@ -139,5 +142,6 @@ class ModelRight(QWidget):
         pass
 
     def reset_train_val_list(self):
+        self.cur_epoch = 0
         self.train_loss.clear()
         self.val_loss.clear()
