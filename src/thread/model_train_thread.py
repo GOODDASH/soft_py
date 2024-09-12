@@ -3,7 +3,8 @@ import threading
 
 import torch
 from sklearn.model_selection import KFold
-from torch_geometric.loader import DataLoader
+from torch.utils.data import DataLoader as TorchDataLoader
+from torch_geometric.loader import DataLoader as GeometricDataLoader
 from PyQt5.QtCore import QThread, pyqtSignal as Signal
 
 
@@ -13,7 +14,7 @@ class ModelTrainThread(QThread):
     signal_train_val_loss = Signal(tuple)
     signal_train_finished = Signal(tuple)
 
-    def __init__(self, model, datasets, kfold: KFold, train_para: dict):
+    def __init__(self, model, datasets, dataloader, kfold: KFold, train_para: dict):
         super().__init__()
         self.running = True
         self.paused = False
@@ -21,6 +22,7 @@ class ModelTrainThread(QThread):
 
         self.kf = kfold
         self.datasets = datasets
+        self.dataloader = dataloader
         self.model = model
         self.train_para = train_para
 
@@ -52,9 +54,8 @@ class ModelTrainThread(QThread):
                 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     optimizer, T_max=opt_para["T_max"]
                 )
-
         # 创建监测整体预测情况的数据集
-        test_dataloader = DataLoader(self.datasets, batch_size=len(self.datasets), shuffle=False)
+        test_dataloader = self.dataloader(self.datasets, batch_size=len(self.datasets), shuffle=False)
 
         num_epochs = self.train_para["epoch"]
 
@@ -64,10 +65,10 @@ class ModelTrainThread(QThread):
             val_subset = torch.utils.data.Subset(self.datasets, val_idx)
 
             # 训练用batch_size， 数据不是太大时，验证时可以用全部数据， batch_size设为数据数量
-            train_dataloader = DataLoader(
+            train_dataloader = self.dataloader(
                 train_subset, batch_size=self.train_para["batch_size"], shuffle=True
             )
-            val_dataloader = DataLoader(
+            val_dataloader = self.dataloader(
                 val_subset, batch_size=self.train_para["batch_size"], shuffle=True
             )
 
@@ -86,8 +87,7 @@ class ModelTrainThread(QThread):
                 self.model.train()
                 total_train_loss = 0
                 for batch_data in train_dataloader:
-                    outputs = self.model(batch_data)
-                    loss = criterion(outputs, batch_data.y.unsqueeze(-1))
+                    loss = self.get_loss(batch_data, criterion)
                     total_train_loss += loss.item()
                     optimizer.zero_grad()
                     loss.backward()
@@ -102,13 +102,12 @@ class ModelTrainThread(QThread):
                 with torch.no_grad():
                     # 计算验证集平均损失值
                     for batch_data in val_dataloader:
-                        outputs = self.model(batch_data)
-                        loss = criterion(outputs, batch_data.y.unsqueeze(-1))
+                        loss = self.get_loss(batch_data, criterion)
                         total_val_loss += loss.item()
                     # 计算整体数据的预测值和损失值
                     for batch_data in test_dataloader:
-                        pred = self.model(batch_data)
-                        test_loss = criterion(pred, batch_data.y.unsqueeze(-1)).item()
+                        pred, loss = self.get_loss(batch_data, criterion, return_pred=True)
+                        test_loss = loss.item()
 
                 avg_val_loss = total_val_loss / val_dataloader_num
 
@@ -141,6 +140,20 @@ class ModelTrainThread(QThread):
                 self.best_pred,
             )
         )
+
+    def get_loss(self, batch_data, criterion, return_pred: bool=False):
+        if self.dataloader is GeometricDataLoader:
+                outputs = self.model(batch_data)
+                loss = criterion(outputs, batch_data.y.unsqueeze(-1))
+        elif self.dataloader is TorchDataLoader:
+                batch_X, batch_y = batch_data
+                outputs = self.model(batch_X)
+                loss = criterion(outputs, batch_y)
+
+        if return_pred:
+            return outputs, loss
+        else:
+            return loss
 
     def stop(self):
         self.running = False
