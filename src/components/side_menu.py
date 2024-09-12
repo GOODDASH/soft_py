@@ -24,7 +24,7 @@ class SideMenu(QWidget):
         self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/connect.png")), "采集数据")
         self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/points.png")), "分析数据")
         self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/nn.png")), "训练模型")
-        self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/compen.png")), "训练模型")
+        self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/compen.png")), "代理补偿")
 
     # 添加按钮和按钮提示
     def add_btn_tip(self, btn: CustomBtn, btn_str: str):

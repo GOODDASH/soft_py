@@ -17,20 +17,19 @@ ga_size: 10
 ga_epoch: 90
 
 num_heads: 2
-gnn_dim: 32
-lstm_dim: 64
+gnn_dim: 16
+lstm_dim: 32
 num_nodes: 6
 seq_len: 3
-edge_start: 0,1,0,2,0,3,1,2,1,3,1,5,2,3,4,5,1,4
-edge_end: 1,0,2,0,3,0,2,1,3,1,5,1,3,2,5,4,4,1
+edge_start: 0,1,0,2,0,3,1,2,1,3,1,5,2,3,4,5,1,4,4,3,5,0
+edge_end: 1,0,2,0,3,0,2,1,3,1,5,1,3,2,5,4,4,1,3,4,0,5
 
-learning_rate: 0.003
+learning_rate: 0.001
 batch_size: 30
-epoch: 50
+epoch: 500
 
 step_size: 20
 step_gamma: 0.9
-T_max: 50
+T_max: 100
 
-
-tsp_res: ''
+tsp_res: 0,2,6,14,16,19

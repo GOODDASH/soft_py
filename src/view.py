@@ -8,10 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtGui import QKeySequence
 
-from src.components.custom_btn import CustomBtn
-from src.pages.sample import Sample
-from src.pages.tsp import Tsp
-from src.pages.model import Model
+from src.pages import Sample, Tsp, Model
 from src.components.side_menu import SideMenu
 
 

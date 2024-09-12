@@ -35,7 +35,8 @@ class ModelChoose(QGroupBox):
         self.edit_edge_end = QLineEdit()
 
         # 示例BPNN需要的输入
-        self.edit_bpnn_hidden_dim = QLineEdit(self)
+        self.edit_bpnn_hidden_dim = QLineEdit("32")
+        self.edit_bpnn_input_shape = QLineEdit("6")
 
         self.vLayout = QVBoxLayout(self)
         self.vLayout.setSpacing(10)
@@ -68,6 +69,7 @@ class ModelChoose(QGroupBox):
         file_path, _ = QFileDialog.getOpenFileName(self, "选择模型文件", "", file_filter)
         if file_path:
             signal_para = self.get_model_para()
+            signal_para["file_path"] = file_path
             self.signal_import_model.emit(signal_para)
 
     def get_model_para(self) -> dict:
@@ -88,6 +90,7 @@ class ModelChoose(QGroupBox):
             case "BPNN":
                 model_para["model_type"] = "BPNN"
                 model_para["hidden_dim"] = int(self.edit_bpnn_hidden_dim.text())
+                model_para["input_shape"] = int(self.edit_bpnn_input_shape.text())
         return model_para
 
     def create_model_type_widget(self) -> QStackedWidget:
@@ -119,6 +122,8 @@ class ModelChoose(QGroupBox):
         bpnn_widget_layout.setContentsMargins(30, 10, 30, 10)
         bpnn_formlayout = QFormLayout()
         bpnn_formlayout.addRow("隐藏维度:", self.edit_bpnn_hidden_dim)
+        bpnn_formlayout.addRow("测点个数:", self.edit_bpnn_input_shape)
+
         bpnn_widget_layout.addLayout(bpnn_formlayout)
 
         model_stacked.addWidget(gat_lstm_widget)

@@ -65,6 +65,7 @@ class Tsp(QWidget):
         self.tsp_config.edit_tsp_num.setText(str(config["tsp_num"]))
         self.tsp_config.edit_size.setText(str(config["ga_size"]))
         self.tsp_config.edit_epoch.setText(str(config["ga_epoch"]))
+        self.tsp_res.edit_tsp.setText(str(config["tsp_res"]))
 
     def update_config(self, config) -> dict:
         config["t_begin"] = int(self.import_data.edit_tem_index_begin.text())

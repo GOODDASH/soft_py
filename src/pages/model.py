@@ -66,6 +66,7 @@ class Model(QWidget):
         self.signal_start_train.emit(para_dict)
         self.model_train.btn_start_train.setEnabled(False)
         self.model_train.btn_increase_train.setEnabled(False)
+        # 清空历史损失值
         self.plot_widget.reset_train_val_list()
         # 点击开始训练后，按钮变成暂停训练
         self.model_train.show_progress_bar_and_stop_btn()
@@ -75,6 +76,8 @@ class Model(QWidget):
         self.signal_increase_train.emit(para_dict)
         self.model_train.btn_start_train.setEnabled(False)
         self.model_train.btn_increase_train.setEnabled(False)
+        # 增量（继续）训练不会清空历史训练损失值
+        self.plot_widget.reset_train_val_list()
         # 点击开始训练后，添加暂停训练
         self.model_train.show_progress_bar_and_stop_btn()
 

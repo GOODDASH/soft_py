@@ -393,8 +393,12 @@ class State(QObject):
                     heads=para["num_heads"],
                 )
                 self.model.load_state_dict(torch.load(para["file_path"]))
-            case _:
-                pass
+            case "BPNN":
+                import torch
+                from src.core.bpnn import BPNN
+
+                self.model = BPNN(hidden_units=para["hidden_dim"], input_shape=para["input_shape"], output_shape=1)
+                self.model.load_state_dict(torch.load(para["file_path"]))
 
     def start_train(self, para, tsp_res_text):
         # 获取选取的温度测点列表
@@ -462,32 +466,32 @@ class State(QObject):
                     heads=model_para["num_heads"],
                 )
             case _:
-                from src.core.example_model import BPNN
+                from src.core.bpnn import BPNN
 
                 self.model = BPNN(
-                    input_shape=6, hidden_units=model_para["hidden_dim"], output_shape=1
+                    input_shape=model_para["input_shape"], hidden_units=model_para["hidden_dim"], output_shape=1
                 )
 
     def train_thread_start(self, model_type, train_para):
         self.signal_start_train.emit()
-        if model_type == "GAT-LSTM":
-            from src.thread.model_train_thread import ModelTrainThread
+        match model_type:
+            case "GAT-LSTM":
+                from torch_geometric.loader import DataLoader as GeometricDataLoader
+                dataloader = GeometricDataLoader
+            case "BPNN":
+                from torch.utils.data import DataLoader as TorchDataLoader
+                dataloader = TorchDataLoader
+                
+        from src.thread.model_train_thread import ModelTrainThread
 
-            self.thread_train = ModelTrainThread(
-                model=self.model,
-                datasets=self.datasets,
-                kfold=self.kf,
-                train_para=train_para,
-            )
-        elif model_type == "BPNN":
-            from src.core.example_trainning_thread import ModelTrainThread
+        self.thread_train = ModelTrainThread(
+            model=self.model,
+            datasets=self.datasets,
+            dataloader=dataloader,
+            kfold=self.kf,
+            train_para=train_para,
+        )
 
-            self.thread_train = ModelTrainThread(
-                model=self.model,
-                datasets=self.datasets,
-                kfold=self.kf,
-                train_para=train_para,
-            )
         self.thread_train.signal_train_val_loss.connect(self.signal_train_val_loss)
         self.thread_train.signal_train_finished.connect(self.signal_train_finished)
         self.thread_train.start()

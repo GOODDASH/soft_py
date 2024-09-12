@@ -34,11 +34,13 @@ class TspRes(QGroupBox):
         self.hLayout.addWidget(QLabel("筛选索引:"))
         self.hLayout.addWidget(self.edit_tsp)
 
-        self.btn_save_data = QPushButton("保存筛选数据")
+        self.btn_layout = QHBoxLayout()
+        self.btn_save_data = QPushButton("保存数据")
         self.btn_save_data.clicked.connect(self.choose_save_path)
-
-        self.btn_mlr_fit = QPushButton("多元线性回归拟合")
+        self.btn_mlr_fit = QPushButton("一阶拟合")
         self.fit_res_layout = QVBoxLayout()
+        self.btn_layout.addWidget(self.btn_save_data)
+        self.btn_layout.addWidget(self.btn_mlr_fit)
 
         self.hLayout4 = QHBoxLayout()
         self.check_edit = QCheckBox("编辑")
@@ -54,9 +56,8 @@ class TspRes(QGroupBox):
 
         self.vLayout.addStretch()
         self.vLayout.addLayout(self.hLayout)
-        self.vLayout.addWidget(self.btn_save_data)
+        self.vLayout.addLayout(self.btn_layout)
         self.vLayout.addWidget(QLabel("拟合结果:"))
-        self.vLayout.addWidget(self.btn_mlr_fit)
         self.vLayout.addLayout(self.fit_res_layout)
         self.vLayout.addLayout(self.hLayout4)
         self.vLayout.addStretch()
