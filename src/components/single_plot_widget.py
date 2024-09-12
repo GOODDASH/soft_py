@@ -1,5 +1,6 @@
 import numpy as np
 from PyQt5.QtCore import QSize
+from matplotlib import pyplot as plt
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QApplication
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -86,6 +87,7 @@ class SinglePlotWidget(QWidget):
                 fontsize=12,
             )
             self.ax_err.legend(loc="upper left")
+            self.ax_err.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
         self.update_canvas()
 
     def plot_temp(self, data: np.ndarray):
@@ -101,6 +103,7 @@ class SinglePlotWidget(QWidget):
                 fontsize=12,
             )
         self.ax_tem.legend(loc="upper left")
+        self.ax_tem.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
 
     # 图示选择的测点和MLR的预测值和真实值对比
     def plot_pred(self, data, pred, tsp_list):
