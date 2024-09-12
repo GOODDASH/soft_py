@@ -48,11 +48,7 @@ class ModelTrain(QGroupBox):
         self.edit_mile_gamma = QLineEdit()
         self.edit_T_max = QLineEdit()
         self.scheduler_params_widget = ComboOptions()
-        self.scheduler_params_widget.add_item_input(
-            item="CosineAnnealingLR",
-            para_labels=["最大周期:"],
-            para_inputs=[self.edit_T_max],
-        )
+        
         self.scheduler_params_widget.add_item_input(
             item="StepLR",
             para_labels=["步长:", "衰减率:"],
@@ -63,6 +59,12 @@ class ModelTrain(QGroupBox):
             para_labels=["里程碑:", "衰减率:"],
             para_inputs=[self.edit_milestones, self.edit_mile_gamma],
         )
+        self.scheduler_params_widget.add_item_input(
+            item="CosineAnnealingLR",
+            para_labels=["最大周期:"],
+            para_inputs=[self.edit_T_max],
+        )
+        self.scheduler_params_widget.combo_box.setCurrentIndex(2)
 
         self.hLayout_btns1 = QHBoxLayout()
         self.btn_start_train = QPushButton("开始训练")

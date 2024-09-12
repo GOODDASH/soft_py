@@ -56,7 +56,7 @@ class View(QMainWindow):
 
         plt.style.use("bmh")
 
-        self.resize(1800, 1200)
+        self.resize(1500, 1000)
         self.setWindowTitle("Soft")
         self.statusBar().show()
         self.side_menu = SideMenu(self)

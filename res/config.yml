@@ -32,4 +32,4 @@ step_size: 20
 step_gamma: 0.9
 T_max: 100
 
-tsp_res: 0,2,6,14,16,19
+tsp_res: 5,11,7,6,20,13

@@ -11,7 +11,7 @@ class SinglePlotWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.font_size = 14
+        self.font_size = 12
 
         self.vLayout = QVBoxLayout(self)
 

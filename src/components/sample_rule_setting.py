@@ -57,6 +57,7 @@ class SampleRuleSetting(QGroupBox):
         self.sample_widget.add_item_input(
             item="定时采集", para_labels=["时长(秒):"], para_inputs=[self.edit_timer]
         )
+        self.sample_widget.combo_box.setCurrentIndex(2)
 
         self.tem_from_layout = QFormLayout()
         self.combo_tem_from = QComboBox()

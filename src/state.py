@@ -26,6 +26,7 @@ class State(QObject):
     error_assert_nc_client_not_none = Signal(str)
     signal_start_sample_success = Signal()
     signal_show_orin_data = Signal()
+    signal_update_time = Signal()
     signal_show_sample_data = Signal()
 
     signal_get_datasets = Signal()
@@ -192,6 +193,7 @@ class State(QObject):
             writer = csv.writer(csvfile)
             writer.writerow(extract_numbers(data[1]))
         self.orin_count += 1
+        self.signal_update_time.emit()
         # 分类并提取数据
         for key, value in data[1].items():
             if key == "nc_data":

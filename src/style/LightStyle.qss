@@ -1,7 +1,7 @@
 QWidget { 
     background-color: rgb(236, 239, 241);
     font-family: 'Microsoft YaHei'; 
-    font-size: 20px; }
+    font-size: 18px; }
 
 QPushButton#btn_add_card {
     border: 1px solid rgb(96, 125, 139);
@@ -136,7 +136,7 @@ QGroupBox {
     padding-bottom: 10px;
 	margin-top: 10px;
     background-color: rgb(236, 239, 241);
-	font-size: 22px;
+	font-size: 20px;
 }
 
 QGroupBox::title {
@@ -146,10 +146,19 @@ QGroupBox::title {
     margin-top: -10px;
 }
 
+QSplitter::handle {
+    background-color: rgb(236, 239, 241);
+    height: 5px;
+}
+
 QSplitter::handle:hover {
-	border: 1px solid rgb(210, 210, 210);
+    background-color: rgb(207, 216, 220);
+}
+
+QSplitter::handle:pressed {
     background-color: rgb(144, 164, 174);
 }
+
 
 QScrollArea { border: none; }
 

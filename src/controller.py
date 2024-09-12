@@ -7,7 +7,7 @@ from src.state import State
 
 fontname = "Microsoft YaHei"
 plt.rcParams["font.sans-serif"] = [fontname]
-plt.rcParams["font.size"] = 14
+plt.rcParams["font.size"] = 12
 plt.rcParams["axes.unicode_minus"] = False
 
 
@@ -37,6 +37,7 @@ class Controller:
         self.state.error_assert_temp_card_not_none.connect(self.on_error_temp_card_none)
         self.state.signal_start_sample_success.connect(self.on_set_stop_sample_btn)
         self.state.signal_show_orin_data.connect(self.on_show_orin_data)
+        self.state.signal_update_time.connect(self.on_update_time)
         self.state.signal_show_sample_data.connect(self.on_show_rule_data)
 
         self.view.signal_import_data.connect(self.on_import_data)
@@ -149,10 +150,21 @@ class Controller:
             self.state.orin_data, self.state.tem_from_nc
         )
 
+    def on_update_time(self):
+        h, m, s = self.convert_seconds(self.state.orin_count)
+        self.view.statusBar().showMessage(f"原始数据: {self.state.orin_count}组; 规则数据: {self.state.rule_count}组; 采集时长: {h}时{m}分{s}秒", 1000)
+
     def on_show_rule_data(self):
         self.view.sample_page.plot_widget.plot_sample_data(
             self.state.rule_data, self.state.tem_from_nc
         )
+
+    @staticmethod
+    def convert_seconds(seconds):
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds_remaining = seconds % 60
+        return hours, minutes, seconds_remaining
 
     def on_import_data(self, para):
         self.view.setCursor(Qt.CursorShape.BusyCursor)
