@@ -1,0 +1,178 @@
+QWidget { 
+    background-color: rgb(236, 239, 241);
+    font-family: 'Microsoft YaHei'; 
+    font-size: 20px; }
+
+QPushButton#btn_add_card {
+    border: 1px solid rgb(96, 125, 139);
+    padding: 0px;
+    border-radius: 19px;
+}
+
+QPushButton#btn_add_card:hover {
+    border: 1px solid rgb(96, 125, 139);
+    padding: 5px 10px 8px 10px;
+    background-color: rgb(199, 208, 211);
+}
+
+QPushButton {
+    padding: 5px 10px 5px 10px;
+    border-radius: 5px;
+    background-color: rgb(240, 240, 240);
+    border: 1px solid black;
+}
+
+QPushButton:hover {
+    padding: 5px 10px 8px 10px;
+    background-color: rgb(199, 208, 211);
+}
+
+QPushButton:checked {
+    padding: 5px 10px 5px 10px;
+    background-color: rgb(193, 202, 206);
+}
+
+QPushButton:pressed {
+    background-color: rgb(144, 164, 174);
+}
+
+QToolButton {
+    padding: 5px 10px 5px 10px;
+    border-radius: 5px;
+    background-color: rgb(236, 239, 241);
+    border: none;
+}
+
+QToolButton:hover {
+    padding: 5px 10px 8px 10px;
+    background-color: rgb(199, 208, 211);
+}
+
+QToolButton:checked {
+    padding: 5px 10px 5px 10px;
+    background-color: rgb(193, 202, 206);
+}
+
+QToolButton:pressed {
+    background-color: rgb(144, 164, 174);
+}
+
+QRadioButton::indicator { 
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    border: 2px solid rgb(96, 125, 139);
+    background-color: rgb(249, 249, 249);
+}
+
+QRadioButton::indicator:hover {
+    border: 3px solid rgb(96, 125, 139);
+    background-color: rgb(199, 208, 211);
+}
+
+QRadioButton::indicator:checked {
+    border: 3px solid rgb(96, 125, 139);
+    background-color: rgb(144, 164, 174);
+}
+
+QLineEdit {
+    text-align: center;
+    background-color: rgb(249, 249, 249);
+    border: 1px solid rgb(100, 100, 100);
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+QLineEdit:hover {
+    text-align: center;
+    background-color: rgb(207, 216, 220);
+    border: 1px solid rgb(100, 100, 100);
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+QLineEdit:focus {
+    text-align: center;
+    background-color: rgb(255, 255, 255);
+    border: 1.5px solid rgb(96, 125, 139);
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+QComboBox {
+    background-color: rgb(245, 245, 245);
+    border: 1px solid rgb(100, 100, 100);
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: rgb(249, 249, 249);
+    selection-background-color: rgb(144, 164, 174);
+    selection-color: black;
+}
+
+QComboBox QAbstractItemView::item {
+    padding: 5px;
+}
+QComboBox QAbstractItemView::item:hover {
+    background-color: rgb(200, 200, 255);
+    color: black;  
+}
+
+QComboBox:hover {
+    background-color: rgb(207, 216, 220);
+    border: 1px solid rgb(100, 100, 100);
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+QGroupBox {
+	border: 2px solid rgb(207, 216, 220);
+	border-radius: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 15px;
+    padding-bottom: 10px;
+	margin-top: 10px;
+    background-color: rgb(236, 239, 241);
+	font-size: 22px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 5px;
+    margin-top: -10px;
+}
+
+QSplitter::handle:hover {
+	border: 1px solid rgb(210, 210, 210);
+    background-color: rgb(144, 164, 174);
+}
+
+QScrollArea { border: none; }
+
+QScrollBar {
+    background-color: rgb(236, 239, 241);
+    width: 10px;
+    height: 10px;
+}
+
+QScrollBar::handle {
+    background-color: rgb(144, 164, 174);
+    border-radius: 0px;
+}
+
+QScrollBar::handle:hover {
+    background-color: rgb(96, 125, 139);
+}
+
+QScrollBar::sub-page {
+    background-color: rgb(207, 216, 220);
+}
+
+QScrollBar::add-page {
+    background-color: rgb(207, 216, 220);
+}
+
