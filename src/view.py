@@ -28,7 +28,7 @@ class View(QMainWindow):
     signal_plot_files = Signal()
     signal_tra_tsp = Signal(list)
     signal_ga_tsp = Signal(list)
-    signal_saved_data_path = Signal(str)
+    signal_saved_data_path = Signal(list)
     signal_mlr_fit = Signal()
     signal_send_coef = Signal(list)
 
@@ -75,7 +75,7 @@ class View(QMainWindow):
         vLayout = QHBoxLayout(central_widget)
         vLayout.setSpacing(0)
         vLayout.setContentsMargins(0, 0, 0, 0)
-        vLayout.addWidget(self.side_menu)
+        vLayout.addWidget(self.side_menu) 
         vLayout.addWidget(self.stack)
 
         with open("src/style/LightStyle.qss", "r") as file:

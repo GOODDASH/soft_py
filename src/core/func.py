@@ -139,6 +139,7 @@ def check_tsp_per(datas, data_cat, tsp):
 
 
 def interpolate_data(data: np.ndarray, num_interpolations: int) -> np.ndarray:
+    # TODO: 使用一次还是二次插值
     """
     对输入的二维数组进行插值，在每对相邻行之间插入指定数量的插值行。
     使用二次插值法，更适合每列代表曲线的情况。
@@ -150,7 +151,8 @@ def interpolate_data(data: np.ndarray, num_interpolations: int) -> np.ndarray:
     返回:
     np.ndarray: 插值后的数组
     """
-
+    if num_interpolations == 0:
+        return data
     rows, cols = data.shape
     new_rows = rows + num_interpolations * (rows - 1)
     interpolated_data = np.empty((new_rows, cols))
@@ -159,7 +161,7 @@ def interpolate_data(data: np.ndarray, num_interpolations: int) -> np.ndarray:
     for col in range(cols):
         y = data[:, col]
         x = np.arange(len(y))
-        f = interp1d(x, y, kind="quadratic")  # 使用二次插值函数
+        f = interp1d(x, y, kind="linear")  # 使用二次插值函数
         new_x = np.linspace(0, len(y) - 1, num=new_rows)
         interpolated_data[:, col] = f(new_x)
 

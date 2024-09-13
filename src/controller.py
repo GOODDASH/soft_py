@@ -215,9 +215,11 @@ class Controller:
         self.view.tsp_page.tsp_res.edit_tsp.setText(",".join(map(str, self.state.tsp_res)))
         self.view.setCursor(Qt.CursorShape.ArrowCursor)  # 恢复鼠标样式
 
-    def on_saved_data(self, file_path):
+    def on_saved_data(self, para):
+        file_path = para[0]
+        inter_num = para[1]
         tsp_res_text = self.view.tsp_page.tsp_res.edit_tsp.text()
-        success, message = self.state.save_chosen_data(file_path, tsp_res_text)
+        success, message = self.state.save_chosen_data(file_path, tsp_res_text, inter_num)
         if not success:
             QMessageBox.critical(self.view, "保存错误", message)
         else:

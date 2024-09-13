@@ -1,4 +1,5 @@
 from PyQt5.QtCore import Qt, pyqtSignal as Signal
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -14,7 +15,7 @@ from PyQt5.QtWidgets import (
 
 
 class TspRes(QGroupBox):
-    signal_saved_data_path = Signal(str)
+    signal_saved_data_path = Signal(list)
     signal_send_coef = Signal(list)
 
     def __init__(self, parent=None):
@@ -28,11 +29,13 @@ class TspRes(QGroupBox):
         self.vLayout = QVBoxLayout(self)
         self.vLayout.setSpacing(10)
 
-        self.hLayout = QHBoxLayout()
+        self.fLayout = QFormLayout()
         self.edit_tsp = QLineEdit(self)
         self.edit_tsp.setPlaceholderText("可手动更改")
-        self.hLayout.addWidget(QLabel("筛选索引:"))
-        self.hLayout.addWidget(self.edit_tsp)
+        self.edit_interpolate_num = QLineEdit("0",self)
+        self.edit_interpolate_num.setValidator(QIntValidator(0, 100))
+        self.fLayout.addRow("筛选结果:", self.edit_tsp)
+        self.fLayout.addRow("插值数量:", self.edit_interpolate_num)
 
         self.btn_layout = QHBoxLayout()
         self.btn_save_data = QPushButton("保存数据")
@@ -55,7 +58,7 @@ class TspRes(QGroupBox):
         self.check_negative.stateChanged.connect(self.change_negative)
 
         self.vLayout.addStretch()
-        self.vLayout.addLayout(self.hLayout)
+        self.vLayout.addLayout(self.fLayout)
         self.vLayout.addLayout(self.btn_layout)
         self.vLayout.addWidget(QLabel("拟合结果:"))
         self.vLayout.addLayout(self.fit_res_layout)
@@ -80,7 +83,7 @@ class TspRes(QGroupBox):
             elif selected_filter == "Text files (*.txt)" and not file_path.endswith(".txt"):
                 file_path += ".txt"
 
-            self.signal_saved_data_path.emit(file_path)
+            self.signal_saved_data_path.emit([file_path, int(self.edit_interpolate_num.text())])
 
     def on_send_coef(self):
         self.signal_send_coef.emit(self.get_intercept_coef())

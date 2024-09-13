@@ -296,7 +296,7 @@ class State(QObject):
         tsp_list = list(map(int, tsp_res_text.split(",")))
         return True, tsp_list
 
-    def save_chosen_data(self, file_path, tsp_res_text):
+    def save_chosen_data(self, file_path, tsp_res_text, inter_num):
         if self.data is None:
             return False, "请先导入数据"
         is_valid, message = self.check_edited_tsp_text(tsp_res_text)
@@ -304,7 +304,7 @@ class State(QObject):
             return False, message
         else:
             tsp_list = message
-            self.data.write_file(file_path, tsp_list)
+            self.data.write_file(file_path, tsp_list, inter_num)
             return True, f"已保存至{file_path}"
 
     def mlr_fit(self, tsp_res_text):
