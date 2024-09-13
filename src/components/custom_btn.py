@@ -3,9 +3,8 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QPushButton
 
 
+# 简单的对PushButton加载图标和设置尺寸
 class CustomBtn(QPushButton):
-    """方便用来定义objectName和图标的继承自QPushButton的类"""
-
     def __init__(self, btn_type: str, btn_icon: QIcon = None):
         super().__init__()
         match btn_type:

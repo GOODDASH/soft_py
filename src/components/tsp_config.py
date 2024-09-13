@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,

@@ -28,21 +28,3 @@ class YamlHandler:
                 self.yaml.dump(self.data, file)
         except Exception as e:
             return e
-
-    def update(self, key, value):
-        """更新数据中的指定键值对"""
-        if self.data is None:
-            return ValueError("先读取文件.")
-        try:
-            self.data[key] = value
-        except Exception as e:
-            return e
-
-    def get(self, key):
-        """获取数据中的指定键的值"""
-        if self.data is None:
-            return ValueError("先读取文件.")
-        try:
-            return self.data.get(key)
-        except Exception as e:
-            return e

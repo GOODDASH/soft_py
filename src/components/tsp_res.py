@@ -32,7 +32,7 @@ class TspRes(QGroupBox):
         self.fLayout = QFormLayout()
         self.edit_tsp = QLineEdit(self)
         self.edit_tsp.setPlaceholderText("可手动更改")
-        self.edit_interpolate_num = QLineEdit("0",self)
+        self.edit_interpolate_num = QLineEdit("0", self)
         self.edit_interpolate_num.setValidator(QIntValidator(0, 100))
         self.fLayout.addRow("筛选结果:", self.edit_tsp)
         self.fLayout.addRow("插值数量:", self.edit_interpolate_num)

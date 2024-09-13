@@ -152,7 +152,10 @@ class Controller:
 
     def on_update_time(self):
         h, m, s = self.convert_seconds(self.state.orin_count)
-        self.view.statusBar().showMessage(f"原始数据: {self.state.orin_count}组; 规则数据: {self.state.rule_count}组; 采集时长: {h}时{m}分{s}秒", 1000)
+        self.view.statusBar().showMessage(
+            f"原始数据: {self.state.orin_count}组; 规则数据: {self.state.rule_count}组; 采集时长: {h}时{m}分{s}秒",
+            1000,
+        )
 
     def on_show_rule_data(self):
         self.view.sample_page.plot_widget.plot_sample_data(

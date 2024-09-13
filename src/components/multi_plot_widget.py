@@ -12,8 +12,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import pyqtSignal as Signal
 
-from src.components.custom_btn import CustomBtn
-from src.components.single_plot_widget import SinglePlotWidget
+from src.components import CustomBtn, SinglePlotWidget
 
 
 class MultiPlotWidget(QWidget):

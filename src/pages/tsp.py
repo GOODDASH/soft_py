@@ -8,10 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal as Signal
 
-from src.components.tsp_import_setting import TspImportSetting
-from src.components.tsp_config import TspConfig
-from src.components.tsp_res import TspRes
-from src.components.multi_plot_widget import MultiPlotWidget
+from src.components import TspImportSetting, TspConfig, TspRes, MultiPlotWidget
 
 
 class Tsp(QWidget):

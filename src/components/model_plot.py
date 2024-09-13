@@ -6,12 +6,12 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QScrollArea,
 )
+from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
 
 
-class ModelRight(QWidget):
+class ModelPlot(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.vLayout = QVBoxLayout(self)
@@ -114,7 +114,7 @@ class ModelRight(QWidget):
         current_time = time.time()
         if current_time - self.last_update_time < self.update_interval:
             return
-        loss_x = [x+self.cur_epoch for x in range(len(self.train_loss))]
+        loss_x = [x + self.cur_epoch for x in range(len(self.train_loss))]
         self.line_train.set_data(loss_x, self.train_loss)
         self.line_val.set_data(loss_x, self.val_loss)
         self.line_pred.set_data(range(len(self.pred)), self.pred)

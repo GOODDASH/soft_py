@@ -55,7 +55,9 @@ class ModelTrainThread(QThread):
                     optimizer, T_max=opt_para["T_max"]
                 )
         # 创建监测整体预测情况的数据集
-        test_dataloader = self.dataloader(self.datasets, batch_size=len(self.datasets), shuffle=False)
+        test_dataloader = self.dataloader(
+            self.datasets, batch_size=len(self.datasets), shuffle=False
+        )
 
         num_epochs = self.train_para["epoch"]
 
@@ -141,14 +143,14 @@ class ModelTrainThread(QThread):
             )
         )
 
-    def get_loss(self, batch_data, criterion, return_pred: bool=False):
+    def get_loss(self, batch_data, criterion, return_pred: bool = False):
         if self.dataloader is GeometricDataLoader:
-                outputs = self.model(batch_data)
-                loss = criterion(outputs, batch_data.y.unsqueeze(-1))
+            outputs = self.model(batch_data)
+            loss = criterion(outputs, batch_data.y.unsqueeze(-1))
         elif self.dataloader is TorchDataLoader:
-                batch_X, batch_y = batch_data
-                outputs = self.model(batch_X)
-                loss = criterion(outputs, batch_y)
+            batch_X, batch_y = batch_data
+            outputs = self.model(batch_X)
+            loss = criterion(outputs, batch_y)
 
         if return_pred:
             return outputs, loss

@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
 )
 
-from src.components.combo_options import ComboOptions
+from src.components import ComboOptions
 
 
 class ModelTrain(QGroupBox):
@@ -48,7 +48,7 @@ class ModelTrain(QGroupBox):
         self.edit_mile_gamma = QLineEdit()
         self.edit_T_max = QLineEdit()
         self.scheduler_params_widget = ComboOptions()
-        
+
         self.scheduler_params_widget.add_item_input(
             item="StepLR",
             para_labels=["步长:", "衰减率:"],

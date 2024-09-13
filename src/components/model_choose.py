@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -13,8 +13,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QGroupBox,
 )
-
-from src.components.graph_edit import GraphEdit
 
 
 class ModelChoose(QGroupBox):
@@ -155,6 +153,8 @@ class ModelChoose(QGroupBox):
                 self.model_stacked.setCurrentIndex(1)
 
     def on_btn_set_edge_index(self):
+        from src.components import GraphEdit
+
         # 图形编辑边列表
         edge_list = self.get_edge_index()
         node_count = int(self.edit_num_nodes.text())

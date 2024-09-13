@@ -3,7 +3,6 @@ from numpy import vstack
 
 class MyData:
     def __init__(self, para):
-        self.tsp_T = None
         self.data_arrays = []
         self.temp_begin_index = para[3]
         self.error_index = para[5]

@@ -8,9 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal as Signal
 
-from src.components.model_choose import ModelChoose
-from src.components.model_train import ModelTrain
-from src.components.model_plot import ModelRight
+from src.components import ModelChoose, ModelTrain, ModelPlot
 
 
 class Model(QWidget):
@@ -40,7 +38,7 @@ class Model(QWidget):
 
         self.plot_area = QScrollArea()
         self.plot_area.setWidgetResizable(True)
-        self.plot_widget = ModelRight(self)
+        self.plot_widget = ModelPlot(self)
         self.plot_area.setWidget(self.plot_widget)
 
         self.layout = QVBoxLayout(self)

@@ -9,7 +9,7 @@ from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtGui import QKeySequence
 
 from src.pages import Sample, Tsp, Model
-from src.components.side_menu import SideMenu
+from src.components import SideMenu
 
 
 class View(QMainWindow):
@@ -75,7 +75,7 @@ class View(QMainWindow):
         vLayout = QHBoxLayout(central_widget)
         vLayout.setSpacing(0)
         vLayout.setContentsMargins(0, 0, 0, 0)
-        vLayout.addWidget(self.side_menu) 
+        vLayout.addWidget(self.side_menu)
         vLayout.addWidget(self.stack)
 
         with open("src/style/LightStyle.qss", "r") as file:

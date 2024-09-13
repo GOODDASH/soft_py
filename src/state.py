@@ -1,14 +1,14 @@
 import os
 import csv
 import datetime
-from collections import deque
 from typing import Optional
+from collections import deque
 from src.core.nc_link import NCLink
 from src.core.modbus_tcp import ModbusTCP
 from src.core.yaml_handler import YamlHandler
 from src.core.serial_port_reader import SerialPortReader
 from src.thread.data_collector_thread import DataCollectorThread
-from src.core.func import extract_numbers, extract_numbers
+from src.core.func import extract_numbers
 from PyQt5.QtCore import pyqtSignal as Signal, QObject
 
 
@@ -374,7 +374,7 @@ class State(QObject):
 
         self.reset_model(model_type=para["model_type"], model_para=para)
         self.model.load_state_dict(torch.load(para["file_path"]))
-    
+
     # 重置模型
     def reset_model(self, model_type, model_para):
         match model_type:
@@ -393,7 +393,9 @@ class State(QObject):
                 from src.core.bpnn import BPNN
 
                 self.model = BPNN(
-                    input_shape=model_para["input_shape"], hidden_units=model_para["hidden_dim"], output_shape=1
+                    input_shape=model_para["input_shape"],
+                    hidden_units=model_para["hidden_dim"],
+                    output_shape=1,
                 )
 
     def start_train(self, para, tsp_res_text):
@@ -452,11 +454,13 @@ class State(QObject):
         match model_type:
             case "GAT-LSTM":
                 from torch_geometric.loader import DataLoader as GeometricDataLoader
+
                 dataloader = GeometricDataLoader
             case "BPNN":
                 from torch.utils.data import DataLoader as TorchDataLoader
+
                 dataloader = TorchDataLoader
-                
+
         from src.thread.model_train_thread import ModelTrainThread
 
         self.thread_train = ModelTrainThread(
@@ -487,4 +491,3 @@ class State(QObject):
         import torch
 
         torch.save(self.model.state_dict(), file_path)
-

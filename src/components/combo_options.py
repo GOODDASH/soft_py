@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
 )
 
 
+# 可以复用的下拉选项
 class ComboOptions(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)

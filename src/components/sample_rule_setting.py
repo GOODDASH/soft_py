@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
 )
 
-from src.components.combo_options import ComboOptions
+from src.components import ComboOptions
 
 
 class SampleRuleSetting(QGroupBox):

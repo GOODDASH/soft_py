@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtGui import QIcon
 
-from src.components.custom_btn import CustomBtn
+from src.components import CustomBtn
 
 
 class SideMenu(QWidget):

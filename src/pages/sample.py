@@ -7,11 +7,13 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal as Signal
 
-from src.components.nc_link_setting import NCLinkSetting
-from src.components.tem_card_setting import TemCardSetting
-from src.components.serial_port_setting import SerialPortSetting
-from src.components.sample_rule_setting import SampleRuleSetting
-from src.components.multi_plot_widget import MultiPlotWidget
+from src.components import (
+    NCLinkSetting,
+    TemCardSetting,
+    SerialPortSetting,
+    SampleRuleSetting,
+    MultiPlotWidget,
+)
 
 
 class Sample(QWidget):
