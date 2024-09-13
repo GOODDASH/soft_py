@@ -10,7 +10,6 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QFormLayout,
     QGroupBox,
-    QCheckBox,
 )
 
 from src.components.combo_options import ComboOptions

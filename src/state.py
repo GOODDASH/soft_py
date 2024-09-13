@@ -12,9 +12,9 @@ from src.core.func import extract_numbers, extract_numbers
 from PyQt5.QtCore import pyqtSignal as Signal, QObject
 
 
-MAX_DATA_LEN = 3600 * 2  # 原始数据最大长度
+MAX_DATA_LEN = 3600 * 2  # 默认原始数据最大长度
 DEFAULT_SAMPLE_PATH = "./data"  # 默认采集文件夹路径
-RPM_AVG_INTER = 60  # 统计RPM平均值间隔(s)
+RPM_AVG_INTER = 60  # 默认统计RPM平均值间隔(s)
 
 
 class State(QObject):
@@ -369,38 +369,32 @@ class State(QObject):
                 print("设值失败")
 
     def load_model(self, para):
-        """
-        para["model_type"]  - 模型类型
-            对于"GAT-LSTM":
-                - para["num_heads"] - num_heads
-                - para["gnn_dim"] - gnn_dim
-                - para["lstm_dim"] - lstm_dim
-                - para["num_nodes"] - num_nodes
-                - para["seq_len"] - seq_len
-            其他模型:
-                -
-        para["file_path"] - 模型文件路径
-        """
-        match para["model_type"]:
+        # para中包含了模型类型、模型参数和文件路径
+        import torch
+
+        self.reset_model(model_type=para["model_type"], model_para=para)
+        self.model.load_state_dict(torch.load(para["file_path"]))
+    
+    # 重置模型
+    def reset_model(self, model_type, model_para):
+        match model_type:
             case "GAT-LSTM":
-                import torch
                 from src.core.gat_lstm import GATLSTM
 
                 self.model = GATLSTM(
                     in_dim=1,
                     out_dim=1,
-                    gat_hidden_dim=para["gnn_dim"],
-                    lstm_hidden_dim=para["lstm_dim"],
-                    num_nodes=para["num_nodes"],
-                    heads=para["num_heads"],
+                    gat_hidden_dim=model_para["gnn_dim"],
+                    lstm_hidden_dim=model_para["lstm_dim"],
+                    num_nodes=model_para["num_nodes"],
+                    heads=model_para["num_heads"],
                 )
-                self.model.load_state_dict(torch.load(para["file_path"]))
-            case "BPNN":
-                import torch
+            case _:
                 from src.core.bpnn import BPNN
 
-                self.model = BPNN(hidden_units=para["hidden_dim"], input_shape=para["input_shape"], output_shape=1)
-                self.model.load_state_dict(torch.load(para["file_path"]))
+                self.model = BPNN(
+                    input_shape=model_para["input_shape"], hidden_units=model_para["hidden_dim"], output_shape=1
+                )
 
     def start_train(self, para, tsp_res_text):
         # 获取选取的温度测点列表
@@ -453,27 +447,6 @@ class State(QObject):
 
         return datasets
 
-    # 重置模型
-    def reset_model(self, model_type, model_para):
-        match model_type:
-            case "GAT-LSTM":
-                from src.core.gat_lstm import GATLSTM
-
-                self.model = GATLSTM(
-                    in_dim=1,
-                    out_dim=1,
-                    gat_hidden_dim=model_para["gnn_dim"],
-                    lstm_hidden_dim=model_para["lstm_dim"],
-                    num_nodes=model_para["num_nodes"],
-                    heads=model_para["num_heads"],
-                )
-            case _:
-                from src.core.bpnn import BPNN
-
-                self.model = BPNN(
-                    input_shape=model_para["input_shape"], hidden_units=model_para["hidden_dim"], output_shape=1
-                )
-
     def train_thread_start(self, model_type, train_para):
         self.signal_start_train.emit()
         match model_type:
@@ -515,4 +488,3 @@ class State(QObject):
 
         torch.save(self.model.state_dict(), file_path)
 
-    # def import_tem_model(self, )

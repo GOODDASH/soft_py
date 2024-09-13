@@ -34,9 +34,10 @@ pip install -r requirements.txt
 
 <img src="doc/layout.png" alt="image-20240909154620636" style="zoom:33%;" />
 
-- 1：侧边导航栏，切换页面到 采集数据\分析数据\训练模型，也可以用 `CTRL + UP \ DOWN` 来翻页
-- 2：右侧整个是一个`QStackedWidget`(堆叠控件)，堆叠了三个页面
-- 3：每个页面中，左侧是一些相关的设置，中间是一个`QSplitter`(拖拉调整比例), 右侧为图像显示区域
+- 侧边导航栏`(1)`，切换页面到 采集数据\分析数据\训练模型，也可以用 `CTRL + UP \ DOWN` 来翻页
+- 右侧整个是一个`QStackedWidget`(堆叠控件)，堆叠了三个页面
+- 每个页面中，左侧`(2)`是一些相关的设置`(4)`，中间是一个`QSplitter`(拖拉调整比例), 右侧为图像显示区域,包含显示内容切换按钮`(5)`、图像区域`(3)`和图像工具栏`(6)`
+- 下方(7)是状态信息栏
 
 命令行运行：
 
@@ -67,6 +68,32 @@ black --line-length 100 ./src/
 - 对于8型系统，它作为一个MQTT客户端，不具备MQTT代理功能，所以本地电脑需要安装MQTT代理，例如 [mosquitto](https://mosquitto.org/)，所以输入项中的"MQTT地址"需要填写本地地址；数控系统端还需要把NC-LINK设置下的地址改为电脑IP
 - 对于9型系统，由于内置了mosquitto，所以地址填写9型系统上位机IP地址
 
-
-
 **注意事项**: 连接之前需要关闭电脑的防火墙
+
+### 2.4 添加模型
+
+#### 2.4.1 界面参数
+
+在`src\components\model_choose.py`中：
+
+- 界面添加模型所需参数的输入：
+`create_model_type_widget`方法下添加相应的参数`widget`, 并添加到`model_stacked`
+- 添加更新模型显示条件分支：
+`update_model_type_widget`方法下添加对应模型名称的`match`分支, 并设置切换页面
+- 设置传递的模型字典信号：
+`get_model_para`方法下添加对应模型名称的`match`分支, 设置好传递的模型参数字典
+
+#### 2.4.2 后端逻辑
+
+`src\state.py`中：
+
+- 设置导入模型：
+`reset_model`方法下`match`分支添加模型实例化方法
+- 创建训练数据集：
+`get_datasets`方法下`match`分支添加模型训练数据集创建方法
+- 设置DataLoader（因为torch_geometric和torch的DataLoader是不兼容的）：
+`train_thread_start`方法下确定用到的DataLoader
+
+`src\thread\model_train_thread.py`(非必要)
+
+- 如果用到了另外的DataLoader, 还需在`get_loss`方法中添加计算损失值的方法
