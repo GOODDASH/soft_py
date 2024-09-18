@@ -61,6 +61,9 @@ class Controller:
         self.state.signal_train_val_loss.connect(self.ui_train_val_loss)
         self.state.signal_train_finished.connect(self.ui_train_finished)
 
+        self.view.signal_import_tem_model.connect(self.on_import_tem_model)
+        self.view.signal_import_rpm.connect(self.on_import_rpm)
+
     # 关闭应用前从界面更新配置字典给state进行保存
     def on_close_window(self):
         self.state.on_close_window(self.view.update_config(self.state.config.data))
@@ -299,3 +302,12 @@ class Controller:
         self.view.statusBar().showMessage(
             f"训练完成, 最优测试损失: {para[2]:.3f}, 出现在第{para[0]+1}折训练的第{para[1]+1}步"
         )
+        self.state.best_model = para[3]  # 保存最佳模型
+
+    def on_import_tem_model(self, para):
+        self.state.import_tem_model(para)
+
+    def on_import_rpm(self,file_path):
+        self.state.import_rpm_file(file_path)
+        self.view.compen_page.import_rpm.show_avg_rpm(self.state.avg_rpm)
+

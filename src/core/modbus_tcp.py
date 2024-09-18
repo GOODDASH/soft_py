@@ -15,13 +15,13 @@ class ModbusTCP:
                 client = ModbusTcpClient(host=para[0], port=para[2])
                 if client.connect():
                     self.clients.append(client)
-                    info(f"连接{para}成功")
+                    info(f"连接{para[0]}: {para[2]}成功")
                 else:
-                    error(f"连接{para}失败")
-                    return (False, f"连接{para}失败")
+                    error(f"连接{para[0]}: {para[2]}失败")
+                    return (False, f"连接{para[0]}: {para[2]}失败")
             except Exception as e:
-                error(f"连接{para}失败: {e}")
-                return (False, f"连接{para}失败")
+                error(f"连接{para[0]}: {para[2]}失败: {e}")
+                return (False, f"连接{para[0]}: {para[2]}失败")
         return (True, f"连接成功")
 
     def close_all(self):

@@ -4,10 +4,10 @@ from torch import nn
 
 
 class TemPred(nn.Module):
-    def __init__(self, tem_nums, hidden_dim, num_layers=1):
+    def __init__(self, temp_nums, hidden_dim, num_layers=1):
         super(TemPred, self).__init__()
-        self.encoder = Encoder(tem_nums, hidden_dim, num_layers)
-        self.decoder = Decoder(tem_nums, hidden_dim, num_layers)
+        self.encoder = Encoder(temp_nums, hidden_dim, num_layers)
+        self.decoder = Decoder(temp_nums, hidden_dim, num_layers)
 
     def forward(self, temp_seq, avg_speeds):
         # temp_seq: (batch_size, seq_len, temp_input_size)

@@ -4,22 +4,19 @@ QWidget {
     font-size: 18px; }
 
 QPushButton#btn_add_card {
-    border: 1px solid rgb(96, 125, 139);
     padding: 0px;
     border-radius: 19px;
 }
 
 QPushButton#btn_add_card:hover {
-    border: 1px solid rgb(96, 125, 139);
     padding: 5px 10px 8px 10px;
     background-color: rgb(199, 208, 211);
 }
 
 QPushButton {
     padding: 5px 10px 5px 10px;
-    border-radius: 5px;
-    background-color: rgb(240, 240, 240);
-    border: 1px solid black;
+    border-radius: 10px;
+    background-color: rgb(227, 232, 234);
 }
 
 QPushButton:hover {
@@ -79,15 +76,15 @@ QLineEdit {
     text-align: center;
     background-color: rgb(249, 249, 249);
     border: 1px solid rgb(100, 100, 100);
-    border-radius: 5px;
+    border-radius: 10px;
     padding-left: 5px;
+    selection-background-color: rgb(144, 164, 174);
 }
 
 QLineEdit:hover {
     text-align: center;
     background-color: rgb(207, 216, 220);
     border: 1px solid rgb(100, 100, 100);
-    border-radius: 5px;
     padding-left: 5px;
 }
 
@@ -95,14 +92,16 @@ QLineEdit:focus {
     text-align: center;
     background-color: rgb(255, 255, 255);
     border: 1.5px solid rgb(96, 125, 139);
-    border-radius: 5px;
     padding-left: 5px;
 }
 
 QComboBox {
     background-color: rgb(245, 245, 245);
     border: 1px solid rgb(100, 100, 100);
-    border-radius: 5px;
+    border-top-left-radius: 10px; 
+    border-top-right-radius: 0px; 
+    border-bottom-left-radius: 10px; 
+    border-bottom-right-radius: 0px; 
     padding-left: 5px;
 }
 
@@ -185,3 +184,28 @@ QScrollBar::add-page {
     background-color: rgb(207, 216, 220);
 }
 
+QHeaderView::section {
+    background-color: rgb(236, 239, 241);
+    border: 1px solid rgb(96, 125, 139); 
+}
+
+QHeaderView::section:hover {
+    background-color: rgb(199, 208, 211);
+}
+
+QTableCornerButton::section {
+    background-color: rgb(236, 239, 241);
+}
+
+QTableCornerButton::section:hover {
+    background-color: rgb(199, 208, 211);
+}
+
+QTableWidget::item:selected {
+    background-color: rgb(144, 164, 174);  
+}
+
+QTableWidget {
+    background-color: rgb(236, 239, 241)
+    gridline-color: rgb(96, 125, 139); 
+}

@@ -34,11 +34,12 @@ class CompenTemModel(QGroupBox):
         self.btn_layout = QHBoxLayout()
         self.btn_layout.addStretch()
         self.btn_import = QPushButton("导入模型")
+        self.btn_import.clicked.connect(self.on_btn_import)
         self.btn_layout.addWidget(self.btn_import)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.addLayout(self.fLayout)
-        self.layout.addLayout(self.btn_layout)
+        self.vLayout = QVBoxLayout(self)
+        self.vLayout.addLayout(self.fLayout)
+        self.vLayout.addLayout(self.btn_layout)
 
     def on_btn_import(self):
         file_filter = "Pytorch File(*.pth);;All files (*.*)"

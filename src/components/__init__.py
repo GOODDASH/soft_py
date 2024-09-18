@@ -26,6 +26,8 @@ from .model_plot import ModelPlot
 
 # 补偿页面组成
 from .compen_tem_model import CompenTemModel
+from .compen_import_rpm import CompenImportRpm
+from .compen_get_para import CompenGetPara
 
 __all__ = [
     "CustomBtn",
@@ -45,5 +47,6 @@ __all__ = [
     "ModelTrain",
     "ModelPlot",
     "CompenTemModel",
-    # "CompenRight",
+    "CompenImportRpm",
+    "CompenGetPara"
 ]

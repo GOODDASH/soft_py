@@ -40,6 +40,9 @@ class View(QMainWindow):
     signal_stop_train = Signal()
     signal_save_model = Signal(str)
 
+    signal_import_tem_model = Signal(dict)
+    signal_import_rpm = Signal(str)
+
     signal_close_window = Signal()
 
     def __init__(self):
@@ -137,6 +140,10 @@ class View(QMainWindow):
         self.model_page.signal_stop_train.connect(self.signal_stop_train)
         # 保存模型
         self.model_page.signal_save_model.connect(self.signal_save_model)
+        # 导入温度模型
+        self.compen_page.signal_import_tem_model.connect(self.signal_import_tem_model)
+        # 导入采集的转速数据
+        self.compen_page.signal_import_rpm.connect(self.signal_import_rpm)
 
     def vis_config(self, config: dict):
         self.sample_page.vis_config(config)

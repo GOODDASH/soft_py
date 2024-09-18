@@ -69,6 +69,7 @@ class State(QObject):
         self.init_abs_temp = None  # 记录第一次获取到的绝对温度
         self.his_rel_temp  = deque([[0 for _ in range(6)], [0 for _ in range(6)], [0 for _ in range(6)]], maxlen=3)  # 记录最近三分钟温升(相对温度)
         self.predicted_temp = None  # 温度模型预测的温升
+        self.avg_rpm = None  # 平均转速数组
 
         self.config = YamlHandler("res/config.yml")
         self.config.read()
@@ -237,7 +238,7 @@ class State(QObject):
                     temp = self.orin_data["nc_reg_g"][-1][: self.nc_reg_num]
                 elif "card_temp" in self.orin_data:
                     temp = self.orin_data["card_temp"][-1]
-
+                # 更新维护最近的温升
                 self.his_rel_temp.append([abs_temp - init for abs_temp, init in zip(temp, self.init_abs_temp)])
                 print(self.his_rel_temp)
                 with open(self.rpm_temp_data_filepath, "a", newline="") as csvfile:
@@ -534,5 +535,8 @@ class State(QObject):
         )
         self.tem_model.load_state_dict(torch.load(para["file_path"]))
 
-
-    
+    def import_rpm_file(self, file_path):
+        import numpy as np
+        data = np.loadtxt(file_path, delimiter=',')
+        self.avg_rpm = data[1:, 0]
+        # print(self.avg_rpm)

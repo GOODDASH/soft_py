@@ -28,8 +28,8 @@ learning_rate: 0.002
 batch_size: 30
 epoch: 100
 
-step_size: 20
+step_size: 10
 step_gamma: 0.9
 T_max: 100
 
-tsp_res: 3,14,19,5,0,2
+tsp_res: 0,1,2,11,14,18

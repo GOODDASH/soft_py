@@ -13,7 +13,6 @@ from PyQt5.QtGui import QIcon, QIntValidator
 from PyQt5.QtCore import pyqtSignal as Signal, QSize
 
 
-# TODO: 目前只有改变ip有实际效果, 界面已经有, 但是没有实现
 class TemCardSetting(QGroupBox):
     signal_connect_tem_card = Signal(list)
     signal_disconnect_tem_card = Signal()
