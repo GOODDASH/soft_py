@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtGui import QKeySequence
 
-from src.pages import Sample, Tsp, Model
+from src.pages import Sample, Tsp, Model, Compen
 from src.components import SideMenu
 
 
@@ -66,9 +66,11 @@ class View(QMainWindow):
         self.sample_page = Sample(self)
         self.tsp_page = Tsp(self)
         self.model_page = Model(self)
+        self.compen_page = Compen(self)
         self.stack.addWidget(self.sample_page)
         self.stack.addWidget(self.tsp_page)
         self.stack.addWidget(self.model_page)
+        self.stack.addWidget(self.compen_page)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)

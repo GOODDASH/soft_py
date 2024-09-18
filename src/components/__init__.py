@@ -25,8 +25,7 @@ from .model_train import ModelTrain
 from .model_plot import ModelPlot
 
 # 补偿页面组成
-# from .compen_left import CompenLeft
-# from .compen_right import CompenRight
+from .compen_tem_model import CompenTemModel
 
 __all__ = [
     "CustomBtn",
@@ -45,6 +44,6 @@ __all__ = [
     "GraphEdit",
     "ModelTrain",
     "ModelPlot",
-    # "CompenLeft",
+    "CompenTemModel",
     # "CompenRight",
 ]

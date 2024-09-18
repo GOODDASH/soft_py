@@ -2,6 +2,8 @@ from numpy import around as np_around
 from pandas import read_csv, read_excel, read_table, DataFrame
 
 
+# 根据文件地址读取数据文件并转换为numpy数组
+# 输出：前n-1列为温度，最后一列n为热误差
 def read_datafile_to_numpy(file_path, trans=False, sep=None, t_begin=0, t_end=0, e_idx=0):
     if file_path.endswith(".csv"):
         df = read_csv(file_path)

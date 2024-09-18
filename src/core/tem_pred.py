@@ -2,71 +2,91 @@ import torch
 from torch import nn
 
 
+
 class TemPred(nn.Module):
-    """
-    温度预测模型, 有编码解码器组成, 工况参数可选
-    """
-
-    def __init__(
-        self, num_sensors=6, hidden_dim=50, future_seq_length=5, num_layers=1, use_speed=False
-    ):
+    def __init__(self, tem_nums, hidden_dim, num_layers=1):
         super(TemPred, self).__init__()
-        self.num_sensors = num_sensors
-        self.hidden_dim = hidden_dim
-        self.future_seq_length = future_seq_length
-        self.num_layers = num_layers
-        self.use_speed = use_speed
+        self.encoder = Encoder(tem_nums, hidden_dim, num_layers)
+        self.decoder = Decoder(tem_nums, hidden_dim, num_layers)
 
-        # 编码器：LSTM
-        self.encoder = nn.LSTM(
-            input_size=num_sensors, hidden_size=hidden_dim, num_layers=num_layers, batch_first=True
-        )
+    def forward(self, temp_seq, avg_speeds):
+        # temp_seq: (batch_size, seq_len, temp_input_size)
+        # avg_speeds: (batch_size, m)
+        m = avg_speeds.size(1)
+        outputs = []
 
-        # 解码器的输入维度取决于是否使用转速
-        decoder_input_size = num_sensors + 1 if use_speed else num_sensors
-        self.decoder = nn.LSTM(
-            input_size=decoder_input_size,
-            hidden_size=hidden_dim,
-            num_layers=num_layers,
-            batch_first=True,
-        )
+        # 编码器
+        h_n, c_n = self.encoder(temp_seq)
 
-        # 线性层：从隐藏状态映射到预测的温度
-        self.linear = nn.Linear(hidden_dim, num_sensors)
+        # 初始解码器输入：最后一个温度
+        input_temp = temp_seq[:, -1, :].unsqueeze(1)  # (batch_size, 1, temp_input_size)
 
-    def forward(self, temp_seq, future_speed_seq=None):
-        # temp_seq: (batch_size, seq_length, num_sensors)
-        # future_speed_seq: (batch_size, future_seq_length, 1) or None
+        hidden = h_n
+        cell = c_n
 
-        # 编码器部分
-        _, (hidden, cell) = self.encoder(temp_seq)
+        for i in range(m):
+            # 获取第 i 个平均转速
+            input_speed = avg_speeds[:, i].unsqueeze(1).unsqueeze(2)  # (batch_size, 1, 1)
+            # 解码器一步预测
+            pred_temp, hidden, cell = self.decoder(input_temp, input_speed, hidden, cell)
+            outputs.append(pred_temp.unsqueeze(1))  # (batch_size, 1, output_size)
 
-        # 解码器的初始输入
-        last_temp = temp_seq[:, -1, :].unsqueeze(1)  # (batch_size, 1, num_sensors)
-        if self.use_speed and future_speed_seq is not None:
-            first_speed = future_speed_seq[:, 0, :].unsqueeze(1)  # (batch_size, 1, 1)
-            decoder_input = torch.cat(
-                (last_temp, first_speed), dim=2
-            )  # (batch_size, 1, num_sensors + 1)
-        else:
-            decoder_input = last_temp  # (batch_size, 1, num_sensors)
+            # 更新输入温度为预测的温度
+            input_temp = pred_temp.unsqueeze(1)  # (batch_size, 1, temp_input_size)
 
-        predictions = []
+        outputs = torch.cat(outputs, dim=1)  # (batch_size, m, output_size)
+        return outputs
+    
 
-        for i in range(self.future_seq_length):
-            # 解码器部分
-            output, (hidden, cell) = self.decoder(decoder_input, (hidden, cell))
-            decoder_output = self.linear(output[:, 0, :])
-            predictions.append(decoder_output.unsqueeze(1))
+class Encoder(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers=1):
+        super(Encoder, self).__init__()
+        # 使输入和输出张量的形状为 (batch_size, seq_len, input_size)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
 
-            # 更新解码器输入
-            if self.use_speed and future_speed_seq is not None and i < self.future_seq_length - 1:
-                next_speed = future_speed_seq[:, i + 1, :].unsqueeze(1)
-                decoder_input = torch.cat((decoder_output.unsqueeze(1), next_speed), dim=2)
-            else:
-                decoder_input = decoder_output.unsqueeze(1)
+    def forward(self, inputs):
+        # inputs: (batch_size, seq_len, input_size)
+        _, (h_n, c_n) = self.lstm(inputs)
+        return h_n, c_n  # 返回最后的隐藏状态和记忆状态
 
-        # predictions: (batch_size, future_seq_length, num_sensors)
-        predictions = torch.cat(predictions, dim=1)
+class Decoder(nn.Module):
+    def __init__(self, tem_nums, hidden_size,  num_layers=1):
+        super(Decoder, self).__init__()
+        self.lstm = nn.LSTM(tem_nums + 1, hidden_size, num_layers, batch_first=True)  # 输入温度和平均转速
+        self.fc = nn.Linear(hidden_size, tem_nums)
 
-        return predictions
+    def forward(self, input_temp, input_speed, hidden, cell):
+        # input_temp: (batch_size, 1, input_size)
+        # input_speed: (batch_size, 1, 1)
+        input_combined = torch.cat((input_temp, input_speed), dim=2)  # (batch_size, 1, input_size + 1)
+        output, (h_n, c_n) = self.lstm(input_combined, (hidden, cell))
+        prediction = self.fc(output.squeeze(1))  # (batch_size, output_size)
+        return prediction, h_n, c_n
+
+
+
+if __name__ == "__main__":
+    import torch
+
+    temp_input_size = 6   # Number of features in the input temperature sequence
+    hidden_size = 32       # Number of hidden units in LSTM layers
+    num_layers = 2         # Number of layers in the LSTM
+
+    # Create model
+    model = TemPred(temp_input_size, hidden_size, num_layers)
+
+    # Sample input data
+    batch_size = 32         # Number of sequences in a batch
+    seq_len = 3           # Length of the temperature sequence
+    m = 10                # Number of future time steps to predict
+
+    # Temperature sequences for the encoder (batch_size, seq_len, temp_input_size)
+    temp_seq = torch.randn(batch_size, seq_len, temp_input_size)
+
+    # Average speeds for future time steps (batch_size, m)
+    avg_speeds = torch.randn(batch_size, m)
+
+    # Forward pass through the model
+    predicted_temps = model(temp_seq, avg_speeds)
+
+    print(predicted_temps.shape)  # Should be (batch_size, m, output_size)

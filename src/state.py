@@ -63,8 +63,12 @@ class State(QObject):
         self.datasets = None
 
         self.kf = None
-        self.model = None
+        self.err_model = None
         self.best_model = None
+
+        self.init_abs_temp = None  # 记录第一次获取到的绝对温度
+        self.his_rel_temp  = deque([[0 for _ in range(6)], [0 for _ in range(6)], [0 for _ in range(6)]], maxlen=3)  # 记录最近三分钟温升(相对温度)
+        self.predicted_temp = None  # 温度模型预测的温升
 
         self.config = YamlHandler("res/config.yml")
         self.config.read()
@@ -197,15 +201,34 @@ class State(QObject):
         # 分类并提取数据
         for key, value in data[1].items():
             if key == "nc_data":
+                if value is not None:
                 # 机床G寄存器除以10才是温度
-                self.orin_data["nc_reg_g"].append([num / 10 for num in value[0][: self.nc_reg_num]])
-                self.orin_data["nc_axis_x"].append(value[1])
-                self.orin_data["nc_axis_y"].append(value[2])
-                self.orin_data["nc_axis_z"].append(value[3])
-                self.orin_data["nc_chan"].append(extract_numbers(value[4]))
+                    reg_temp = [num / 10 for num in value[0][: self.nc_reg_num]]
+                    # 记录初始温度
+                    if self.init_abs_temp is None:
+                        self.init_abs_temp = reg_temp
+                    # 插入数据
+                    self.orin_data["nc_reg_g"].append(reg_temp)
+                    self.orin_data["nc_axis_x"].append(value[1])
+                    self.orin_data["nc_axis_y"].append(value[2])
+                    self.orin_data["nc_axis_z"].append(value[3])
+                    self.orin_data["nc_chan"].append(extract_numbers(value[4]))
+                else:
+                    # 采集失败则自动复制最后一次的数据
+                    self.orin_data["nc_reg_g"].append(self.orin_data["nc_reg_g"][-1])
+                    self.orin_data["nc_axis_x"].append(self.orin_data["nc_axis_x"][-1])
+                    self.orin_data["nc_axis_y"].append(self.orin_data["nc_axis_y"][-1])
+                    self.orin_data["nc_axis_z"].append(self.orin_data["nc_axis_z"][-1])
+                    self.orin_data["nc_chan"].append(self.orin_data["nc_chan"][-1])
             else:
                 self.orin_data[key].append(extract_numbers(value))
         # 统计一分钟平均转速和温度变化
+        self.save_rpm_temp_data()
+        # 发送显示原始数据信号
+        if self.show_orin:
+            self.signal_show_orin_data.emit()
+
+    def save_rpm_temp_data(self):
         if "nc_chan" in self.orin_data:
             self.total_rpm += self.orin_data["nc_chan"][-1][2]
             if self.orin_count % RPM_AVG_INTER == 0:
@@ -214,13 +237,13 @@ class State(QObject):
                     temp = self.orin_data["nc_reg_g"][-1][: self.nc_reg_num]
                 elif "card_temp" in self.orin_data:
                     temp = self.orin_data["card_temp"][-1]
+
+                self.his_rel_temp.append([abs_temp - init for abs_temp, init in zip(temp, self.init_abs_temp)])
+                print(self.his_rel_temp)
                 with open(self.rpm_temp_data_filepath, "a", newline="") as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(extract_numbers([self.avg_rpm[-1], temp]))
                 self.total_rpm = 0
-        # 发送显示原始数据信号
-        if self.show_orin:
-            self.signal_show_orin_data.emit()
 
     def append_rule_data(self):
         rule_record = []
@@ -373,7 +396,7 @@ class State(QObject):
         import torch
 
         self.reset_model(model_type=para["model_type"], model_para=para)
-        self.model.load_state_dict(torch.load(para["file_path"]))
+        self.err_model.load_state_dict(torch.load(para["file_path"]))
 
     # 重置模型
     def reset_model(self, model_type, model_para):
@@ -381,7 +404,7 @@ class State(QObject):
             case "GAT-LSTM":
                 from src.core.gat_lstm import GATLSTM
 
-                self.model = GATLSTM(
+                self.err_model = GATLSTM(
                     in_dim=1,
                     out_dim=1,
                     gat_hidden_dim=model_para["gnn_dim"],
@@ -392,7 +415,7 @@ class State(QObject):
             case _:
                 from src.core.bpnn import BPNN
 
-                self.model = BPNN(
+                self.err_model = BPNN(
                     input_shape=model_para["input_shape"],
                     hidden_units=model_para["hidden_dim"],
                     output_shape=1,
@@ -464,7 +487,7 @@ class State(QObject):
         from src.thread.model_train_thread import ModelTrainThread
 
         self.thread_train = ModelTrainThread(
-            model=self.model,
+            model=self.err_model,
             datasets=self.datasets,
             dataloader=dataloader,
             kfold=self.kf,
@@ -490,4 +513,26 @@ class State(QObject):
     def save_model(self, file_path):
         import torch
 
-        torch.save(self.model.state_dict(), file_path)
+        torch.save(self.err_model.state_dict(), file_path)
+
+    def import_tem_model(self, para):
+        """
+        导入温度预测模型
+
+        para["temp_nums"]
+        para["hidden_dim"]
+        para["num_layers"]
+        para["file_path"]
+        """
+        import torch
+        from src.core.tem_pred import TemPred
+
+        self.tem_model = TemPred(
+            temp_nums=para["temp_nums"],
+            hidden_dim=para["hidden_dim"],
+            num_layers=para["num_layers"],
+        )
+        self.tem_model.load_state_dict(torch.load(para["file_path"]))
+
+
+    
