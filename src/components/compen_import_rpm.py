@@ -11,12 +11,15 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QStackedWidget,
     QMessageBox,
-    QGroupBox,  QTableWidget, QTableWidgetItem,
+    QGroupBox,
+    QTableWidget,
+    QTableWidgetItem,
 )
 
 
 class CompenImportRpm(QGroupBox):
     signal_import_rpm = Signal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("导入工况")
@@ -44,12 +47,12 @@ class CompenImportRpm(QGroupBox):
 
         row = data.shape[0]
         self.table = QTableWidget(row, 1)
+        self.table.horizontalHeader().hide()
+        self.table.verticalHeader().setDefaultAlignment(Qt.AlignCenter)
         self.table.setFixedWidth(200)
         for i in range(row):
             item = QTableWidgetItem(str(data[i]))
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table.setItem(i, 0, item)
-        
+
         self.vLayout.addWidget(self.table, 1, Qt.AlignHCenter)
-
-

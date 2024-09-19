@@ -63,6 +63,7 @@ class Controller:
 
         self.view.signal_import_tem_model.connect(self.on_import_tem_model)
         self.view.signal_import_rpm.connect(self.on_import_rpm)
+        self.view.signal_cal_para.connect(self.on_cal_para)
 
     # 关闭应用前从界面更新配置字典给state进行保存
     def on_close_window(self):
@@ -254,7 +255,7 @@ class Controller:
     def on_import_model(self, para):
         self.view.setCursor(Qt.CursorShape.BusyCursor)
         self.view.statusBar().showMessage("正在导入Pytorch模型...")
-        self.state.load_model(para)
+        self.state.load_err_model(para)
         self.view.model_page.model_train.btn_increase_train.setEnabled(True)
         self.view.setCursor(Qt.CursorShape.ArrowCursor)
         self.view.model_page.model_train.btn_start_train.setText("重新训练")
@@ -307,7 +308,9 @@ class Controller:
     def on_import_tem_model(self, para):
         self.state.import_tem_model(para)
 
-    def on_import_rpm(self,file_path):
+    def on_import_rpm(self, file_path):
         self.state.import_rpm_file(file_path)
-        self.view.compen_page.import_rpm.show_avg_rpm(self.state.avg_rpm)
-
+        self.view.compen_page.import_rpm.show_avg_rpm(self.state.sampled_rpm)
+        
+    def on_cal_para(self):
+        self.state.cal_para()

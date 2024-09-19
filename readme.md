@@ -34,8 +34,8 @@ pip install -r requirements.txt
 
 <img src="doc/layout.png" alt="image-20240909154620636" style="zoom:33%;" />
 
-- 侧边导航栏`(1)`，切换页面到 采集数据\分析数据\训练模型，也可以用 `CTRL + UP \ DOWN` 来翻页
-- 右侧整个是一个`QStackedWidget`(堆叠控件)，堆叠了三个页面
+- 侧边导航栏`(1)`，切换页面到 采集数据\分析数据\训练模型\代理模型，也可以用 `CTRL + UP \ DOWN` 来翻页
+- 右侧整个是一个`QStackedWidget`(堆叠控件)，堆叠了四个页面
 - 每个页面中，左侧`(2)`是一些相关的设置`(4)`，中间是一个`QSplitter`(拖拉调整比例), 右侧为图像显示区域,包含显示内容切换按钮`(5)`、图像区域`(3)`和图像工具栏`(6)`
 - 下方(7)是状态信息栏
 
@@ -44,6 +44,7 @@ pip install -r requirements.txt
 - `.\.env\Scripts\python.exe -m src.pages.sample`只显示采集数据页面UI
 - `.\.env\Scripts\python.exe -m src.pages.tsp`只显示分析数据页面UI
 - `.\.env\Scripts\python.exe -m src.pages.model`只显示训练模型页面UI
+- - `.\.env\Scripts\python.exe -m src.pages.compen`只显示代理模型页面UI
 
 格式化所有python代码：
 
@@ -96,4 +97,4 @@ black --line-length 100 ./src/
 
 `src\thread\model_train_thread.py`(非必要)
 
-- 如果用到了另外的DataLoader, 还需在`get_loss`方法中添加计算损失值的方法
+- 如果用到了除了torch_geometric和torch的DataLoader另外的DataLoader, 还需在`get_loss`方法中添加对应计算损失值的方法

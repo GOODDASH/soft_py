@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from torch.utils.data import Dataset
 
+
 class TempRpmDataset(Dataset):
     def __init__(self, csv_file, t=3, m=5):
         """
@@ -11,10 +12,10 @@ class TempRpmDataset(Dataset):
             m (int): 后续的平均转速和温升的步数。
         """
         # 读取CSV文件到numpy数组中
-        data = np.loadtxt(csv_file, delimiter=',')
+        data = np.loadtxt(csv_file, delimiter=",")
         self.average_speeds = data[:, 0]  # 第一列：平均转速
-        self.temps = data[:, 1:]          # 后面的列：温度传感器数据
-        
+        self.temps = data[:, 1:]  # 后面的列：温度传感器数据
+
         # 温升计算：每个温度值减去初始温度值
         self.first_temps = self.temps[0]  # 第一行温度值
         self.temp_rises = self.temps - self.first_temps  # 温升
@@ -38,7 +39,7 @@ class TempRpmDataset(Dataset):
             temp_rises_seq = np.stack(temp_rises_seq)
 
             # 获取后面m个平均转速
-            next_avg_speeds = self.average_speeds[i+1 : i+1+self.m]
+            next_avg_speeds = self.average_speeds[i + 1 : i + 1 + self.m]
             # 如果不足m个，用最后一个值填充
             if len(next_avg_speeds) < self.m:
                 if len(next_avg_speeds) == 0:
@@ -52,7 +53,7 @@ class TempRpmDataset(Dataset):
             self.features.append((temp_rises_seq, next_avg_speeds))
 
             # 获取后面m个温升作为标签
-            next_temp_rises = self.temp_rises[i+1 : i+1+self.m]
+            next_temp_rises = self.temp_rises[i + 1 : i + 1 + self.m]
             # 如果不足m个，用最后一个值填充
             if len(next_temp_rises) < self.m:
                 if len(next_temp_rises) == 0:
@@ -63,31 +64,30 @@ class TempRpmDataset(Dataset):
                 next_temp_rises = np.concatenate([next_temp_rises, padding], axis=0)
 
             self.labels.append(next_temp_rises)
-            
+
         # 截断末尾无法构建完整标签的数据
-        self.features = self.features[:-self.m] if self.m > 1 else self.features
-        self.labels = self.labels[:-self.m] if self.m > 1 else self.labels
+        self.features = self.features[: -self.m] if self.m > 1 else self.features
+        self.labels = self.labels[: -self.m] if self.m > 1 else self.labels
 
     def __len__(self):
         return len(self.features)
-    
+
     def __getitem__(self, idx):
         temp_rises_seq, next_avg_speeds = self.features[idx]
         label = self.labels[idx]
-        
+
         # 转换为Tensor
         temp_rises_seq = torch.tensor(temp_rises_seq, dtype=torch.float32)
         next_avg_speeds = torch.tensor(next_avg_speeds, dtype=torch.float32)
         label = torch.tensor(label, dtype=torch.float32)
-        
+
         return (temp_rises_seq, next_avg_speeds), label
-    
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from torch.utils.data import ConcatDataset
 
-    csv_files = [r'data\tsp_1.csv', r'data\tsp_2.csv', r'data\tsp_3.csv']
+    csv_files = [r"data\tsp_1.csv", r"data\tsp_2.csv", r"data\tsp_3.csv"]
     # 对每个CSV文件创建独立的数据集
     datasets = [TempRpmDataset(csv_file, t=3, m=5) for csv_file in csv_files]
     # 使用ConcatDataset将这些数据集合并

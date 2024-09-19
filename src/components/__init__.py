@@ -48,5 +48,5 @@ __all__ = [
     "ModelPlot",
     "CompenTemModel",
     "CompenImportRpm",
-    "CompenGetPara"
+    "CompenGetPara",
 ]
