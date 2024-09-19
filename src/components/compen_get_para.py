@@ -26,3 +26,4 @@ class CompenGetPara(QGroupBox):
         self.vLayout.addWidget(self.btn_cal_para)
         
         
+        # TODO: 添加获取预测温度、预测热误差、一阶拟合、二阶拟合按钮，最后是个一键导入按钮

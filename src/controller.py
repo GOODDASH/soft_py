@@ -16,7 +16,7 @@ class Controller:
         self.state = State()
         self.view = View()
         self.connect_slots()
-        self.view.vis_config(self.state.config.data)
+        self.view.vis_config(self.state.ui_para.data)
         self.view.show()
 
     def connect_slots(self):
@@ -67,7 +67,7 @@ class Controller:
 
     # 关闭应用前从界面更新配置字典给state进行保存
     def on_close_window(self):
-        self.state.on_close_window(self.view.update_config(self.state.config.data))
+        self.state.on_close_window(self.view.update_config(self.state.ui_para.data))
 
     def on_connect_nc(self, para):
         self.view.setCursor(Qt.CursorShape.WaitCursor)
@@ -314,3 +314,4 @@ class Controller:
         
     def on_cal_para(self):
         self.state.cal_para()
+        # TODO: 研究怎么处理图数据

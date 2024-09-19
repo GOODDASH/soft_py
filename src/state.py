@@ -73,12 +73,12 @@ class State(QObject):
         self.predicted_temp = None  # 温度模型预测的温升
         self.sampled_rpm = None  # 平均转速数组
 
-        self.config = YamlHandler("res/config.yml")
-        self.config.read()
+        self.ui_para = YamlHandler("res/config.yml")
+        self.ui_para.read()
 
     def on_close_window(self, config):
-        self.config.data = config
-        self.config.write()
+        self.ui_para.data = config
+        self.ui_para.write()
         self.disconnect_nc()
         self.disconnect_tem_card()
         self.close_port()
@@ -338,6 +338,19 @@ class State(QObject):
         tsp_list = list(map(int, tsp_res_text.split(",")))
         return True, tsp_list
 
+    @staticmethod
+    def validate_tsp_input(input_text: str) -> tuple[bool, str]:
+        if not input_text.strip():
+            return False, "输入不能为空。"
+
+        # 使用正则表达式检查输入格式是否正确（逗号分隔的整数）
+        import re
+
+        if not re.match(r"^(\d+,)*\d+$", input_text.strip()):
+            return False, "输入格式不正确，请确保是逗号分隔的整数列表。"
+
+        return True, ""
+
     def save_chosen_data(self, file_path: str, tsp_res_text: str, inter_num: int) -> tuple[bool, str]:
         """
         保存选取的测点温度数据和热误差数据, 并且可以插值
@@ -374,19 +387,6 @@ class State(QObject):
                 datas=self.data.data_arrays, data_cat=self.data.data_cat, tsp=tsp_list
             )
             return True, [pred_list, tsp_list, intercept, coef, rmse]
-
-    @staticmethod
-    def validate_tsp_input(input_text: str) -> tuple[bool, str]:
-        if not input_text.strip():
-            return False, "输入不能为空。"
-
-        # 使用正则表达式检查输入格式是否正确（逗号分隔的整数）
-        import re
-
-        if not re.match(r"^(\d+,)*\d+$", input_text.strip()):
-            return False, "输入格式不正确，请确保是逗号分隔的整数列表。"
-
-        return True, ""
 
     # TODO: 需要测试导入功能
     def send_coef(self, coef: list) -> None:
@@ -635,13 +635,12 @@ class State(QObject):
         # 预测温度
         pred_temp = self.tem_model(his_tem_tensor, rpm_tensor)
         print(pred_temp.shape)
-        # 根据模型类型计算预测的热误差
-        if isinstance(self.err_model, GATLSTM):
-            print("进来")
-            cat_temp = torch.cat((his_tem_tensor[:, -2:, :], pred_temp), dim=1)
-            for i in range(pred_temp.shape[1]):
-                input_seq = cat_temp[:, i:i+3, :]
-                print(input_seq.shape)
+        # 根据模型类型计算预测的热误差, 先用最简单的BPNN
+        if isinstance(self.err_model, BPNN):
+            pred_err = self.err_model(pred_temp)
+            print(pred_err.shape)
+        # elif
+        # 拟合系数
       
         
         
