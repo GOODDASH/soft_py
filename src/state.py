@@ -64,14 +64,19 @@ class State(QObject):
 
         self.kf = None
         self.err_model = None
+        self.edge_index = None
         self.best_model = None
 
+        self.tem_model = None
         self.init_abs_temp = None  # 记录第一次获取到的绝对温度
         self.his_rel_temp = deque(
             [[0 for _ in range(6)], [0 for _ in range(6)], [0 for _ in range(6)]], maxlen=3
         )  # 记录最近三分钟温升(相对温度)
-        self.predicted_temp = None  # 温度模型预测的温升
+        self.pred_temp_numpy = None  # 温度模型预测的温升
+        self.pred_err_numpy = None  # 热误差模型预测的热误差
         self.sampled_rpm = None  # 平均转速数组
+        self.coef_linear = None  # 一阶拟合的参数
+        self.coef_quadratic = None  # 二阶拟合的参数
 
         self.ui_para = YamlHandler("res/config.yml")
         self.ui_para.read()
@@ -351,7 +356,9 @@ class State(QObject):
 
         return True, ""
 
-    def save_chosen_data(self, file_path: str, tsp_res_text: str, inter_num: int) -> tuple[bool, str]:
+    def save_chosen_data(
+        self, file_path: str, tsp_res_text: str, inter_num: int
+    ) -> tuple[bool, str]:
         """
         保存选取的测点温度数据和热误差数据, 并且可以插值
         -----
@@ -445,7 +452,10 @@ class State(QObject):
         """
         match model_type:
             case "GAT-LSTM":
+                import torch
                 from src.core.gat_lstm import GATLSTM
+
+                self.edge_index = torch.tensor(model_para["edge_list"], dtype=torch.long)
 
                 self.err_model = GATLSTM(
                     in_dim=1,
@@ -483,7 +493,7 @@ class State(QObject):
 
         self.reset_model(model_type, model_para)
         self.train_thread_start(model_type, para["train_para"])
-        
+
     def increase_train(self, para: dict, tsp_res_text: str) -> None:
         """
         增量训练， 与start_train的区别在于, 不需要重置模型
@@ -521,11 +531,11 @@ class State(QObject):
                 import torch
                 from src.core.graph_data import GraphData
 
-                edge_index = torch.tensor(model_para["edge_list"], dtype=torch.long)
+                self.edge_index = torch.tensor(model_para["edge_list"], dtype=torch.long)
                 for idx, array in enumerate(self.data.data_arrays):
                     dataset = GraphData(
                         array[:, tsp_list],
-                        edge_index,
+                        self.edge_index,
                         array[:, -1],
                         model_para["seq_len"],
                     )
@@ -621,11 +631,17 @@ class State(QObject):
         self.sampled_rpm = data[1:, 0]  # 第一行的没有用, 从第二行开始
         # print(self.sampled_rpm)
 
-    def cal_para(self) -> None:
+    def cal_para(self, degree: int) -> None:
+        """
+        计算一阶、二阶代理模型拟合参数
+        ----
+        - degree: 模型阶数
+        """
         import torch
         from src.core.gat_lstm import GATLSTM
         from src.core.bpnn import BPNN
-        
+        from src.core.poly_least_squares import PolyLeastSquares
+
         # 历史温度变化趋势转换为tensor
         his_tem_tensor = torch.tensor(self.his_rel_temp, dtype=torch.float32).unsqueeze(0)
         print(his_tem_tensor.shape)
@@ -639,8 +655,33 @@ class State(QObject):
         if isinstance(self.err_model, BPNN):
             pred_err = self.err_model(pred_temp)
             print(pred_err.shape)
-        # elif
-        # 拟合系数
-      
-        
-        
+        elif isinstance(self.err_model, GATLSTM):
+            from torch_geometric.data import Data
+
+            cat_temp = torch.cat((his_tem_tensor, pred_temp), dim=1).squeeze(0)
+            err_list = []
+            for i in range(pred_temp.shape[1]):
+                input = cat_temp[i : i + 3, :].reshape(-1, 1)
+                data = Data(x=input, edge_index=self.edge_index)
+                err = self.err_model(data)
+                err_list.append(err)
+            pred_err = torch.cat(err_list, dim=0).unsqueeze(0)
+        else:
+            # 未知模型类型
+            return
+
+        # 去除多余维度并转换为numpy数组
+        self.pred_temp_numpy = pred_temp.squeeze(0).detach().numpy()
+        self.pred_err_numpy = pred_err.squeeze(0).detach().numpy()
+        print(self.pred_temp_numpy.shape)
+        print(self.pred_err_numpy.shape)
+
+        fit_model = PolyLeastSquares(degree)
+        fit_model.fit(self.pred_temp_numpy, self.pred_err_numpy)
+
+        if degree == 1:
+            self.coef_linear = fit_model.get_coefficients()
+            print(self.coef_linear.shape)
+        elif degree == 2:
+            self.coef_quadratic = fit_model.get_coefficients()
+            print(self.coef_quadratic.shape)

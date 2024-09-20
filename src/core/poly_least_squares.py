@@ -24,7 +24,8 @@ class PolyLeastSquares:
         y = np.array(y) if isinstance(y, list) else y
 
         A = self.__get_matrix_A(X)
-        self.coefficients, residuals, rank, s = np.linalg.lstsq(A, y, rcond=None)
+        coef, _, _, _ = np.linalg.lstsq(A, y, rcond=None)
+        self.coefficients = coef.reshape(-1)
 
     # 根据温度数据计算得到热误差
     # 输入：

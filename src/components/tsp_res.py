@@ -49,13 +49,13 @@ class TspRes(QGroupBox):
         self.check_edit = QCheckBox("编辑")
         self.check_negative = QCheckBox("取反")
         self.btn_send_para = QPushButton("导入参数")
-        self.btn_send_para.clicked.connect(self.on_send_coef)
         self.hLayout4.addStretch()
         self.hLayout4.addWidget(self.check_edit)
         self.hLayout4.addWidget(self.check_negative)
         self.hLayout4.addWidget(self.btn_send_para)
         self.check_edit.stateChanged.connect(self.change_editable)
         self.check_negative.stateChanged.connect(self.change_negative)
+        self.btn_send_para.clicked.connect(self.on_send_coef)
 
         self.vLayout.addStretch()
         self.vLayout.addLayout(self.fLayout)
@@ -100,7 +100,9 @@ class TspRes(QGroupBox):
         widget = QWidget()
         formlayout = QFormLayout(widget)
         label_rmse = QLineEdit(f"{rmse:.4f}")
+        label_rmse.setFixedWidth(120)
         label_inter = QLineEdit(f"{intercept:.4f}")
+        label_inter.setFixedWidth(120)
         label_rmse.setEnabled(False)
         label_inter.setEnabled(False)
 
@@ -111,11 +113,12 @@ class TspRes(QGroupBox):
 
         for i, c in enumerate(coef):
             label = QLineEdit(f"{c:.4f}")
+            label.setFixedWidth(120)
             label.setEnabled(False)
             self.edit_mlr_paras.append(label)
             formlayout.addRow(f"系数{i+1}: ", label)
 
-        self.fit_res_layout.addWidget(widget)
+        self.fit_res_layout.addWidget(widget, 0, Qt.AlignHCenter)
 
     def change_editable(self, flag):
         if self.edit_mlr_paras:

@@ -71,7 +71,7 @@ class GATLSTM(nn.Module):
         # [batch_size*seq_len, lstm_hidden_dim*heads*num_nodes]
         x = (
             x.view(data.batch_size, -1, x.size(1))
-            if hasattr(data, "batch")
+            if hasattr(data, "batch_size")
             else x.view(1, -1, x.size(1))
         )
         # [batch_size, seq_len, lstm_hidden_dim*heads*num_nodes] - 要将时间步的维度分离出来
@@ -81,7 +81,7 @@ class GATLSTM(nn.Module):
         # [batch_size, lstm_hidden_dim*heads*num_nodes]
         x = self.fc(x)
         # [batch_size, out_dim]
-        if not hasattr(data, "batch"):
-            x = x.squeeze(0)
+        # if not hasattr(data, "batch_size"):
+        #     x = x.squeeze(0)
 
         return x

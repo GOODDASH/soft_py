@@ -47,6 +47,7 @@ class CompenImportRpm(QGroupBox):
 
         row = data.shape[0]
         self.table = QTableWidget(row, 1)
+        self.table.setMinimumHeight(200)
         self.table.horizontalHeader().hide()
         self.table.verticalHeader().setDefaultAlignment(Qt.AlignCenter)
         self.table.setFixedWidth(200)

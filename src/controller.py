@@ -63,7 +63,8 @@ class Controller:
 
         self.view.signal_import_tem_model.connect(self.on_import_tem_model)
         self.view.signal_import_rpm.connect(self.on_import_rpm)
-        self.view.signal_cal_para.connect(self.on_cal_para)
+        self.view.signal_linear_fit.connect(self.on_linear_fit)
+        self.view.signal_quadratic_fit.connect(self.on_quadratic_fit)
 
     # 关闭应用前从界面更新配置字典给state进行保存
     def on_close_window(self):
@@ -311,7 +312,11 @@ class Controller:
     def on_import_rpm(self, file_path):
         self.state.import_rpm_file(file_path)
         self.view.compen_page.import_rpm.show_avg_rpm(self.state.sampled_rpm)
-        
-    def on_cal_para(self):
-        self.state.cal_para()
-        # TODO: 研究怎么处理图数据
+
+    def on_linear_fit(self):
+        self.state.cal_para(1)
+        self.view.compen_page.get_para.show_fit_para(1, self.state.coef_linear)
+
+    def on_quadratic_fit(self):
+        self.state.cal_para(2)
+        self.view.compen_page.get_para.show_fit_para(2, self.state.coef_quadratic)
