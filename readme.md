@@ -18,7 +18,7 @@ pip install -r requirements.txt
 
 - 连接设备成功后，如果中途断联导致采集到None，或者空列表会出错，因为没有添加错误处理
 - 向机床导入多元线性回归的拟合参数功能还没测试
-- 很多输入框获取数时直接采用的是 `int(xxx.text())` ，只要少部分加了`QValidator`，如果转换错误会导致程序崩溃，注意
+- 很多输入框获取数时直接采用的是 `int(xxx.text())` ，只要少部分加了`QValidator`，如果转换错误会导致程序崩溃
 
 使用视频:
 
@@ -44,7 +44,7 @@ pip install -r requirements.txt
 - `.\.env\Scripts\python.exe -m src.pages.sample`只显示采集数据页面UI
 - `.\.env\Scripts\python.exe -m src.pages.tsp`只显示分析数据页面UI
 - `.\.env\Scripts\python.exe -m src.pages.model`只显示训练模型页面UI
-- - `.\.env\Scripts\python.exe -m src.pages.compen`只显示代理模型页面UI
+- `.\.env\Scripts\python.exe -m src.pages.compen`只显示代理模型页面UI
 
 格式化所有python代码：
 
@@ -66,12 +66,12 @@ black --line-length 100 ./src/
 
 利用基于`MQTT`协议的`NC-Link`通讯
 
-- 对于8型系统，它作为一个MQTT客户端，不具备MQTT代理功能，所以本地电脑需要安装MQTT代理，例如 [mosquitto](https://mosquitto.org/)，所以输入项中的"MQTT地址"需要填写本地地址；数控系统端还需要把NC-LINK设置下的地址改为电脑IP
+- 对于8型系统，它作为一个MQTT客户端，不具备MQTT代理，所以本地电脑需要安装MQTT代理，例如 [mosquitto](https://mosquitto.org/)，所以输入项中的"MQTT地址"需要填写本地地址；数控系统端还需要把NC-LINK设置下的地址改为电脑IP
 - 对于9型系统，由于内置了mosquitto，所以地址填写9型系统上位机IP地址
 
 **注意事项**: 连接之前需要关闭电脑的防火墙
 
-### 2.4 添加模型
+### 2.4 添加热误差预测模型
 
 #### 2.4.1 界面参数
 
@@ -92,9 +92,9 @@ black --line-length 100 ./src/
 `reset_model`方法下`match`分支添加模型实例化方法
 - 创建训练数据集：
 `get_datasets`方法下`match`分支添加模型训练数据集创建方法
-- 设置DataLoader（因为torch_geometric和torch的DataLoader是不兼容的）：
-`train_thread_start`方法下确定用到的DataLoader
+- 设置`DataLoader`（因为`torch_geometric`和`torch`的`DataLoader`是不兼容的）：
+`train_thread_start`方法下确定用到的`DataLoader`
 
 `src\thread\model_train_thread.py`(非必要)
 
-- 如果用到了除了torch_geometric和torch的DataLoader另外的DataLoader, 还需在`get_loss`方法中添加对应计算损失值的方法
+- 如果用到了除了`torch_geometric`和`torch`的`DataLoader`另外的`DataLoader`, 还需在`get_loss`方法中添加对应计算损失值的方法

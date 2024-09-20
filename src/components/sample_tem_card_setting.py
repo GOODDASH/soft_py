@@ -12,6 +12,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QIntValidator
 from PyQt5.QtCore import pyqtSignal as Signal, QSize
 
+# TODO: 采集卡可以选择排除哪些接口
+
 
 class TemCardSetting(QGroupBox):
     signal_connect_tem_card = Signal(list)
@@ -24,6 +26,7 @@ class TemCardSetting(QGroupBox):
         self.input_port = []
         self.input_addr = []
         self.input_reg_num = []
+        self.input_exclude_idx = []
 
         self.setTitle("采集卡设置")
         self.layout = QVBoxLayout(self)
@@ -107,6 +110,8 @@ class TemCardSetting(QGroupBox):
         edit_port = QLineEdit("502")
         edit_addr = QLineEdit("620")
         edit_reg_num = QLineEdit("9")
+        edit_exclude_dx = QLineEdit()
+        edit_exclude_dx.setPlaceholderText('示例: "0,4,9"')
         edit_slave.setValidator(int_validator)
         edit_port.setValidator(int_validator)
         edit_addr.setValidator(int_validator)
@@ -115,6 +120,7 @@ class TemCardSetting(QGroupBox):
         flayout.addRow("端口号:", edit_port)
         flayout.addRow("起始地址:", edit_addr)
         flayout.addRow("采集数量:", edit_reg_num)
+        flayout.addRow("排除序号:", edit_exclude_dx)
         flayout.setContentsMargins(30, 10, 30, 10)
 
         vlayout.addWidget(line_widget)
@@ -129,6 +135,7 @@ class TemCardSetting(QGroupBox):
         self.input_port.append(edit_port)
         self.input_addr.append(edit_addr)
         self.input_reg_num.append(edit_reg_num)
+        self.input_exclude_idx.append(edit_exclude_dx)
 
     def show_detail_edits(self, widget: QWidget):
         cur_vis = widget.isVisible()
@@ -148,13 +155,21 @@ class TemCardSetting(QGroupBox):
     def get_input_paras(self):
         """返回采集卡ip的所有设置"""
         para = [
-            (ip.text(), int(slave.text()), int(port.text()), int(addr.text()), int(reg_num.text()))
-            for ip, slave, port, addr, reg_num in zip(
+            (
+                ip.text(),
+                int(slave.text()),
+                int(port.text()),
+                int(addr.text()),
+                int(reg_num.text()),
+                exclude_idx.text(),
+            )
+            for ip, slave, port, addr, reg_num, exclude_idx in zip(
                 self.input_ips,
                 self.input_slave,
                 self.input_port,
                 self.input_addr,
                 self.input_reg_num,
+                self.input_exclude_idx,
             )
         ]
         return para

@@ -28,7 +28,7 @@ class YamlHandler:
                 self.yaml.dump(self.data, file)
         except Exception as e:
             return e
-        
+
     def get(self, key):
         """根据键获取值"""
         if self.data is None:

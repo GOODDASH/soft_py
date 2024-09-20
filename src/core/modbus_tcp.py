@@ -5,7 +5,7 @@ from pymodbus.client import ModbusTcpClient
 
 class ModbusTCP:
     def __init__(self, paras):
-        # paras: [(ip, slave, port, addr, reg_num), ...]
+        # paras: [(ip, slave, port, addr, reg_num, exclude_idx), ...]
         self.paras = paras
         self.clients = []
 
@@ -43,6 +43,13 @@ class ModbusTCP:
                     all_registers = []  # 读取失败置为空列表
                 else:
                     registers = response.registers
+
+                    exlude_idx_str = self.paras[index][5]
+                    if exlude_idx_str:
+                        exclude_idx = list(map(int, self.paras[index][5].split(",")))
+                        registers = [
+                            val for index, val in enumerate(registers) if index not in exclude_idx
+                        ]
                     all_registers.extend(self._trans_func(registers))
             except Exception as e:
                 error(f"读取寄存器发生异常: {e}")

@@ -98,7 +98,7 @@ QLineEdit:focus {
 }
 
 QComboBox {
-    background-color: rgb(245, 245, 245);
+    background-color: rgb(249, 249, 249);
     border: 1px solid rgb(100, 100, 100);
     border-top-left-radius: 10px; 
     border-top-right-radius: 0px; 
