@@ -33,7 +33,7 @@ class Compen(QWidget):
         self.compen_widget = QWidget()
         self.compen_widget.setMaximumWidth(500)
         self.compen_widget_layout = QVBoxLayout(self.compen_widget)
-        self.compen_widget_layout.setSpacing(10)
+        self.compen_widget_layout.setSpacing(15)
         self.compen_widget_layout.addWidget(self.import_tem_model)
         self.compen_widget_layout.addWidget(self.import_rpm)
         self.compen_widget_layout.addWidget(self.get_para)

@@ -30,7 +30,7 @@ class Tsp(QWidget):
         self.tsp_widget = QWidget()
         self.tsp_widget.setMaximumWidth(500)
         self.tsp_widget_layout = QVBoxLayout(self.tsp_widget)
-        self.tsp_widget_layout.setSpacing(10)
+        self.tsp_widget_layout.setSpacing(15)
         self.tsp_widget_layout.addWidget(self.import_data)
         self.tsp_widget_layout.addWidget(self.tsp_config)
         self.tsp_widget_layout.addWidget(self.tsp_res)

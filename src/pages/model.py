@@ -36,7 +36,7 @@ class Model(QWidget):
         self.model_widget = QWidget()
         self.model_widget.setMaximumWidth(500)
         self.model_widget_layout = QVBoxLayout(self.model_widget)
-        self.model_widget_layout.setSpacing(10)
+        self.model_widget_layout.setSpacing(15)
         self.model_widget_layout.addWidget(self.model_choose)
         self.model_widget_layout.addWidget(self.model_train)
         self.model_widget_layout.addStretch()

@@ -50,7 +50,7 @@ class Sample(QWidget):
         self.sample_widget = QWidget()
         self.sample_widget.setMaximumWidth(500)
         self.sample_widget_layout = QVBoxLayout(self.sample_widget)
-        self.sample_widget_layout.setSpacing(10)
+        self.sample_widget_layout.setSpacing(15)
         self.sample_widget_layout.addWidget(self.nc_link_widget)
         self.sample_widget_layout.addWidget(self.tem_card_widget)
         self.sample_widget_layout.addWidget(self.serial_port_widget)
