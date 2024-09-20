@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QMessageBox,
 )
-from PyQt5.QtCore import pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSignal as Signal, Qt
 from PyQt5.QtGui import QIntValidator
 
 
@@ -37,13 +37,11 @@ class NCLinkSetting(QGroupBox):
         self.formLayout1.addRow(QLabel("MQTT端口:"), self.edit_mqtt_port)
         self.formLayout1.addRow(QLabel("机床SN码:"), self.edit_nc_SN)
 
-        self.btn_layout1 = QHBoxLayout()
         self.btn_connect_nc = QPushButton("连接机床")
-        self.btn_layout1.addStretch()
-        self.btn_layout1.addWidget(self.btn_connect_nc)
 
         self.vlayout.addLayout(self.formLayout1)
-        self.vlayout.addLayout(self.btn_layout1)
+        self.vlayout.addWidget(self.btn_connect_nc, 0, Qt.AlignRight)
+
 
         self.btn_connect_nc.clicked.connect(self.on_btn_connect_nc)
 

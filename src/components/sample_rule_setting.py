@@ -78,7 +78,6 @@ class SampleRuleSetting(QGroupBox):
         self.btn_layout = QHBoxLayout()
         self.btn_sample_data_save_path = QPushButton("保存目录")
         self.btn_start_sample = QPushButton("开始采集")
-        self.btn_layout.addStretch()
         self.btn_layout.addWidget(self.btn_sample_data_save_path)
         self.btn_layout.addWidget(self.btn_start_sample)
         self.vLayout.addLayout(self.btn_layout)

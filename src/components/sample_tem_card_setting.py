@@ -10,9 +10,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
 )
 from PyQt5.QtGui import QIcon, QIntValidator
-from PyQt5.QtCore import pyqtSignal as Signal, QSize
-
-# TODO: 采集卡可以选择排除哪些接口
+from PyQt5.QtCore import pyqtSignal as Signal, QSize, Qt
 
 
 class TemCardSetting(QGroupBox):
@@ -32,7 +30,7 @@ class TemCardSetting(QGroupBox):
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(10)
         self.vLayout_tab_tem_card = QVBoxLayout()
-        self.vLayout_tab_tem_card.setSpacing(0)
+        self.vLayout_tab_tem_card.setContentsMargins(0, 0, 0, 0)
         self.btn_layout = QHBoxLayout()
         self.btn_add_card = QPushButton()
         self.btn_add_card.setObjectName("btn_add_card")
@@ -46,13 +44,10 @@ class TemCardSetting(QGroupBox):
         self.vLayout_tab_tem_card.addLayout(self.btn_layout)
         self.btn_add_card.clicked.connect(lambda: self.add_input_row())
 
-        self.btn_layout = QHBoxLayout()
-        self.btn_layout.addStretch()
         self.btn_connect = QPushButton("连接测试", self)
-        self.btn_layout.addWidget(self.btn_connect)
 
         self.layout.addLayout(self.vLayout_tab_tem_card)
-        self.layout.addLayout(self.btn_layout)
+        self.layout.addWidget(self.btn_connect, 0, Qt.AlignRight)
 
         self.btn_connect.clicked.connect(self.on_connect_tem_card)
 
@@ -72,7 +67,7 @@ class TemCardSetting(QGroupBox):
 
     def add_input_row(self, text=None):
         """添加采集卡ip地址输入框"""
-        label = QLabel("IP:")
+        label = QLabel("IP :")
         if text is not None:
             edit_ip = QLineEdit(text)
         else:
@@ -96,6 +91,7 @@ class TemCardSetting(QGroupBox):
 
         line_widget = QWidget()
         horizontalLayout = QHBoxLayout(line_widget)
+        horizontalLayout.setContentsMargins(0, 0, 0, 0)
         horizontalLayout.addWidget(label)
         horizontalLayout.addWidget(edit_ip)
         horizontalLayout.addWidget(button1)

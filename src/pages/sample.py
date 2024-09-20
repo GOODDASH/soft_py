@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
     QScrollArea,
     QSplitter,
@@ -14,7 +15,10 @@ from src.components import (
     SampleRuleSetting,
     MultiPlotWidget,
 )
+from src.style.gui_const import SIDE_MIN_WIDTH
 
+
+# FIXME: 右侧plot量表读书部分的单位不是微米
 
 class Sample(QWidget):
     signal_connect_nc = Signal(list)
@@ -39,8 +43,12 @@ class Sample(QWidget):
 
         self.sample_setting_area = QScrollArea()
         self.sample_setting_area.setWidgetResizable(True)
-        self.sample_setting_area.setMinimumWidth(300)
+        self.sample_setting_area.setMinimumWidth(SIDE_MIN_WIDTH)
+        self.sample_widget_container = QWidget()
+        self.sample_widget_container_layout = QHBoxLayout(self.sample_widget_container)
+        # self.sample_widget_container_layout.setAlignment(Qt.AlignTop) 
         self.sample_widget = QWidget()
+        self.sample_widget.setMaximumWidth(500)
         self.sample_widget_layout = QVBoxLayout(self.sample_widget)
         self.sample_widget_layout.setSpacing(10)
         self.sample_widget_layout.addWidget(self.nc_link_widget)
@@ -48,7 +56,8 @@ class Sample(QWidget):
         self.sample_widget_layout.addWidget(self.serial_port_widget)
         self.sample_widget_layout.addWidget(self.sample_rule_widget)
         self.sample_widget_layout.addStretch()
-        self.sample_setting_area.setWidget(self.sample_widget)
+        self.sample_widget_container_layout.addWidget(self.sample_widget, 0, Qt.AlignVCenter)
+        self.sample_setting_area.setWidget(self.sample_widget_container)
 
         self.plot_area = QScrollArea()
         self.plot_widget = MultiPlotWidget()
@@ -56,13 +65,14 @@ class Sample(QWidget):
         self.plot_area.setWidgetResizable(True)
         self.plot_area.setWidget(self.plot_widget)
 
-        self.layout = QVBoxLayout(self)
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(0, 10, 10, 10)
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.addWidget(self.sample_setting_area)
         self.splitter.addWidget(self.plot_area)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
-        self.layout.addWidget(self.splitter)
+        self.vlayout.addWidget(self.splitter)
 
         self.connect_slots()
 

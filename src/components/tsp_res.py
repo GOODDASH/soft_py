@@ -39,8 +39,10 @@ class TspRes(QGroupBox):
 
         self.btn_layout = QHBoxLayout()
         self.btn_save_data = QPushButton("保存数据")
+        self.btn_save_data.setEnabled(False)
         self.btn_save_data.clicked.connect(self.choose_save_path)
         self.btn_mlr_fit = QPushButton("一阶拟合")
+        self.btn_mlr_fit.setEnabled(False)
         self.fit_res_layout = QVBoxLayout()
         self.btn_layout.addWidget(self.btn_save_data)
         self.btn_layout.addWidget(self.btn_mlr_fit)
@@ -49,6 +51,7 @@ class TspRes(QGroupBox):
         self.check_edit = QCheckBox("编辑")
         self.check_negative = QCheckBox("取反")
         self.btn_send_para = QPushButton("导入参数")
+        self.btn_send_para.setEnabled(False)
         self.hLayout4.addStretch()
         self.hLayout4.addWidget(self.check_edit)
         self.hLayout4.addWidget(self.check_negative)

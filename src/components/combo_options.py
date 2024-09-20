@@ -14,13 +14,13 @@ from PyQt5.QtWidgets import (
 class ComboOptions(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
+        self.vlayout = QVBoxLayout(self)
         self.combo_box = QComboBox()
         self.stacked_widget = QStackedWidget()
-        self.layout.addWidget(self.combo_box)
-        self.layout.addWidget(self.stacked_widget)
-        self.layout.setSpacing(10)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.vlayout.addWidget(self.combo_box)
+        self.vlayout.addWidget(self.stacked_widget)
+        self.vlayout.setSpacing(10)
+        self.vlayout.setContentsMargins(0, 0, 0, 0)
 
         self.combo_box.currentIndexChanged.connect(self.change_page)
 
@@ -29,6 +29,7 @@ class ComboOptions(QWidget):
         self.combo_box.addItem(item)
         widget = QWidget()
         flayout = QFormLayout(widget)
+        flayout.setContentsMargins(20, 5, 20, 5)
         flayout.setSpacing(10)
         for para_label, para_input in zip(para_labels, para_inputs):
             flayout.addRow(para_label, para_input)

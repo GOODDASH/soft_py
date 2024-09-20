@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
     QApplication,
     QScrollArea,
@@ -9,6 +10,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal as Signal
 
 from src.components import TspImportSetting, TspConfig, TspRes, MultiPlotWidget
+from src.style.gui_const import SIDE_MIN_WIDTH
 
 
 class Tsp(QWidget):
@@ -21,29 +23,35 @@ class Tsp(QWidget):
 
         self.tsp_setting_area = QScrollArea()
         self.tsp_setting_area.setWidgetResizable(True)
-        self.tsp_setting_area.setMinimumWidth(300)
+        self.tsp_setting_area.setMinimumWidth(SIDE_MIN_WIDTH)
+        self.tsp_widget_container = QWidget()
+        self.tsp_widget_container_layout = QHBoxLayout(self.tsp_widget_container)
+        # self.tsp_widget_container_layout.setAlignment(Qt.AlignTop) 
         self.tsp_widget = QWidget()
+        self.tsp_widget.setMaximumWidth(500)
         self.tsp_widget_layout = QVBoxLayout(self.tsp_widget)
         self.tsp_widget_layout.setSpacing(10)
         self.tsp_widget_layout.addWidget(self.import_data)
         self.tsp_widget_layout.addWidget(self.tsp_config)
         self.tsp_widget_layout.addWidget(self.tsp_res)
         self.tsp_widget_layout.addStretch()
-        self.tsp_setting_area.setWidget(self.tsp_widget)
+        self.tsp_widget_container_layout.addWidget(self.tsp_widget, 0, Qt.AlignVCenter)
+        self.tsp_setting_area.setWidget(self.tsp_widget_container)
 
         self.plot_area = QScrollArea()
         self.plot_widget = MultiPlotWidget()
         self.plot_area.setWidgetResizable(True)
         self.plot_area.setWidget(self.plot_widget)
 
-        self.layout = QVBoxLayout(self)
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(0, 10, 10, 10)
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.addWidget(self.tsp_setting_area)
         self.splitter.addWidget(self.plot_area)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
-        self.layout.addWidget(self.splitter)
-        self.layout.setSpacing(0)
+        self.vlayout.addWidget(self.splitter)
+        self.vlayout.setSpacing(0)
 
     def plot_files(self, data: list):
         self.plot_widget.plot_files(data)

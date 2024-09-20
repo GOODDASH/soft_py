@@ -44,7 +44,9 @@ class TspConfig(QGroupBox):
 
         self.hLayout2 = QHBoxLayout()
         self.btn_tra_tsp = QPushButton("传统筛选")
+        self.btn_tra_tsp.setEnabled(False)
         self.btn_ga_tsp = QPushButton("迭代筛选")
+        self.btn_ga_tsp.setEnabled(False)
         self.hLayout2.addWidget(self.btn_tra_tsp)
         self.hLayout2.addWidget(self.btn_ga_tsp)
 

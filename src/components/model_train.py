@@ -68,9 +68,10 @@ class ModelTrain(QGroupBox):
 
         self.hLayout_btns1 = QHBoxLayout()
         self.btn_start_train = QPushButton("开始训练")
+        self.btn_start_train.setEnabled(False)
         self.btn_increase_train = QPushButton("增量训练")
         self.btn_increase_train.setEnabled(False)
-        self.btn_save_model = QPushButton("保存模型")
+        self.btn_save_model = QPushButton("保存模型参数")
         self.hLayout_btns1.addWidget(self.btn_start_train)
         self.hLayout_btns1.addWidget(self.btn_increase_train)
 

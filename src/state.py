@@ -201,9 +201,10 @@ class State(QObject):
 
         # FIXME: 没有处理可能出现采集到None或者空列表的情况
         # 保存采集的所有数据作为原始数据
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(self.orin_data_filepath, "a", newline="") as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(extract_numbers(data[1]))
+            writer.writerow([current_time] + extract_numbers(data[1]))
         self.orin_count += 1
         self.signal_update_time.emit()
         # 分类并提取数据
@@ -313,6 +314,7 @@ class State(QObject):
                 self.tsp_res = cor(self.data.Xdata, self.data.Tdata, self.cluster_res)
 
     def get_ga_tsp_res(self, pop_size: int, iters: int) -> None:
+        # TODO: 在另一个线程中计算, 有没有必要
         """
         约束遗传算法求解温度敏感点
         ----

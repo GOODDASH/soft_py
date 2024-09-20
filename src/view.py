@@ -1,12 +1,14 @@
 from PyQt5.QtWidgets import (
     QWidget,
+    QLabel,
+    QPushButton,
     QStackedWidget,
     QMainWindow,
     QHBoxLayout,
     QShortcut,
 )
-from PyQt5.QtCore import pyqtSignal as Signal
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtCore import pyqtSignal as Signal, Qt, QTimer, QSize, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QPoint
+from PyQt5.QtGui import QKeySequence, QPixmap, QIcon
 
 from src.pages import Sample, Tsp, Model, Compen
 from src.components import SideMenu
@@ -63,7 +65,6 @@ class View(QMainWindow):
 
         self.resize(1500, 1000)
         self.setWindowTitle("Soft")
-        self.statusBar().show()
         self.side_menu = SideMenu(self)
         self.side_menu.btns[0].click()
 
@@ -84,6 +85,39 @@ class View(QMainWindow):
         vLayout.setContentsMargins(0, 0, 0, 0)
         vLayout.addWidget(self.side_menu)
         vLayout.addWidget(self.stack)
+
+        # self.nc_connected_btn = QPushButton(self)
+        # self.nc_connected_btn.setObjectName("statusBtn")
+        # self.nc_connected_btn.setToolTip("已连接机床")
+        # self.nc_connected_btn.setIcon(QIcon(r"src\icons\link.png"))
+        # self.nc_connected_btn.setFixedSize(QSize(30, 30))
+        # self.nc_connected_btn.hide()
+
+        # self.nc_disconnected_btn = QPushButton(self)
+        # self.nc_disconnected_btn.setObjectName("statusBtn")
+        # self.nc_disconnected_btn.setToolTip("未连接机床")
+        # self.nc_disconnected_btn.setIcon(QIcon(r"src\icons\unlink.png"))
+        # self.nc_disconnected_btn.setFixedSize(QSize(40, 40))
+
+        self.info_label = QLabel()
+        self.info_label.setObjectName("statusLabel")
+        self.info_label.setAlignment(Qt.AlignCenter)
+        
+        self.info_container = QWidget()
+        self.info_container.setObjectName("statusBar")
+        self.info_container.setFixedHeight(40)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 5, 0, 5)
+        layout.addWidget(self.info_label, 1, Qt.AlignCenter)
+        self.info_container.setLayout(layout)
+
+        self.statusBar().setSizeGripEnabled(False)
+        self.statusBar().addPermanentWidget(self.info_container, 1)
+        self.statusBar().hide()
+        
+        # 定时器，用于隐藏消息
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.clear_message)
 
         with open("src/style/LightStyle.qss", "r") as file:
             self.setStyleSheet(file.read())
@@ -161,9 +195,63 @@ class View(QMainWindow):
         config = self.tsp_page.update_config(config)
         config = self.model_page.update_config(config)
         return config
+    
+    def show_message(self, message, timeout=0):
+        self.statusBar().show()
+        self.info_label.setText(message)
+        
+        # 如果设置了超时时间，启动定时器
+        if timeout > 0:
+            self.timer.start(timeout)
+    
+    def clear_message(self):
+        """清除居中的消息."""
+        self.statusBar().hide()
+        self.info_label.clear()
+        self.timer.stop()
 
     def on_change_page(self, index: int):
+        current_index = self.stack.currentIndex()
+        if current_index == index:
+            return
+
+        current_widget = self.stack.widget(current_index)
+        next_widget = self.stack.widget(index)
+
+        direction = -1 if index > current_index else 1
+        offset_y = self.stack.height() * direction
+
+        next_widget.setGeometry(0, -offset_y, self.stack.width(), self.stack.height())
+        next_widget.show()
+
+        anim_current = QPropertyAnimation(current_widget, b"pos", self)
+        anim_current.setDuration(300)
+        anim_current.setStartValue(current_widget.pos())
+        anim_current.setEndValue(current_widget.pos() + QPoint(0, offset_y))
+        anim_current.setEasingCurve(QEasingCurve.InOutQuad)
+
+        anim_next = QPropertyAnimation(next_widget, b"pos", self)
+        anim_next.setDuration(300)
+        anim_next.setStartValue(next_widget.pos())
+        anim_next.setEndValue(QPoint(0, 0))
+        anim_next.setEasingCurve(QEasingCurve.InOutQuad)
+
+        self.anim_group = QParallelAnimationGroup(self)
+        self.anim_group.addAnimation(anim_current)
+        self.anim_group.addAnimation(anim_next)
+        self.anim_group.finished.connect(lambda: self.on_animation_finished(index))
+        self.anim_group.start()
+
+    def on_animation_finished(self, index):
         self.stack.setCurrentIndex(index)
+        # 下面用来确保没有其他页面残留以及位置没错
+        for i in range(self.stack.count()):
+            widget = self.stack.widget(i)
+            if i != index:
+                widget.hide()
+                widget.move(0, 0)
+        current_widget = self.stack.currentWidget()
+        current_widget.setGeometry(0, 0, self.stack.width(), self.stack.height())
 
     def adapt_background_color(self):
         R, G, B = 236 / 255, 239 / 255, 241 / 255

@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtCore import pyqtSignal as Signal
+from PyQt5.QtCore import pyqtSignal as Signal, Qt
 
 
 class SerialPortSetting(QGroupBox):
@@ -33,14 +33,11 @@ class SerialPortSetting(QGroupBox):
         hLayout_baud_rate.addWidget(QLabel("波特率:"))
         hLayout_baud_rate.addWidget(self.edit_baud_rate)
 
-        self.btn_layout = QHBoxLayout()
-        self.btn_layout.addStretch()
         self.btn_connect = QPushButton("连接测试", self)
-        self.btn_layout.addWidget(self.btn_connect)
 
         vLayout.addLayout(hLayout_port_num)
         vLayout.addLayout(hLayout_baud_rate)
-        vLayout.addLayout(self.btn_layout)
+        vLayout.addWidget(self.btn_connect, 0, Qt.AlignRight)
 
         self.btn_connect.clicked.connect(self.on_open_serial_port)
 

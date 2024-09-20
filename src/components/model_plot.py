@@ -15,6 +15,7 @@ class ModelPlot(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.vLayout = QVBoxLayout(self)
+        self.vLayout.setContentsMargins(0, 0, 0, 0)
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         self.vLayout.addWidget(scroll_area)

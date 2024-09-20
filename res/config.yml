@@ -30,6 +30,8 @@ epoch: 100
 
 step_size: 10
 step_gamma: 0.9
+milestones: 10,40
+mile_gamma: 0.9
 T_max: 100
 
-tsp_res: 11,18,20,7,5,13
+tsp_res: 0,1,6,7,15,19

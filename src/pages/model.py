@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
     QScrollArea,
     QSplitter,
@@ -9,6 +10,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal as Signal
 
 from src.components import ModelChoose, ModelTrain, ModelPlot
+from src.style.gui_const import SIDE_MIN_WIDTH
 
 
 class Model(QWidget):
@@ -27,28 +29,34 @@ class Model(QWidget):
 
         self.model_setting_area = QScrollArea()
         self.model_setting_area.setWidgetResizable(True)
-        self.model_setting_area.setMinimumWidth(300)
+        self.model_setting_area.setMinimumWidth(SIDE_MIN_WIDTH)
+        self.model_widget_container = QWidget()
+        self.model_widget_container_layout = QHBoxLayout(self.model_widget_container)
+        # self.model_widget_container_layout.setAlignment(Qt.AlignTop)
         self.model_widget = QWidget()
+        self.model_widget.setMaximumWidth(500)
         self.model_widget_layout = QVBoxLayout(self.model_widget)
         self.model_widget_layout.setSpacing(10)
         self.model_widget_layout.addWidget(self.model_choose)
         self.model_widget_layout.addWidget(self.model_train)
         self.model_widget_layout.addStretch()
-        self.model_setting_area.setWidget(self.model_widget)
+        self.model_widget_container_layout.addWidget(self.model_widget, 0, Qt.AlignVCenter)
+        self.model_setting_area.setWidget(self.model_widget_container)
 
         self.plot_area = QScrollArea()
         self.plot_area.setWidgetResizable(True)
         self.plot_widget = ModelPlot(self)
         self.plot_area.setWidget(self.plot_widget)
 
-        self.layout = QVBoxLayout(self)
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(0, 10, 10, 10)
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.addWidget(self.model_setting_area)
         self.splitter.addWidget(self.plot_area)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
-        self.layout.addWidget(self.splitter)
-        self.layout.setSpacing(0)
+        self.vlayout.addWidget(self.splitter)
+        self.vlayout.setSpacing(0)
 
         self.connect_slots()
 
@@ -171,6 +179,8 @@ class Model(QWidget):
 
         self.model_train.edit_step_size.setText(str(config["step_size"]))
         self.model_train.edit_step_gamma.setText(str(config["step_gamma"]))
+        self.model_train.edit_milestones.setText(config["milestones"])
+        self.model_train.edit_mile_gamma.setText(str(config["mile_gamma"]))
         self.model_train.edit_T_max.setText(str(config["T_max"]))
 
     def update_config(self, config: dict):
@@ -188,6 +198,8 @@ class Model(QWidget):
 
         config["step_size"] = int(self.model_train.edit_step_size.text())
         config["step_gamma"] = float(self.model_train.edit_step_gamma.text())
+        config["milestones"] = self.model_train.edit_milestones.text()
+        config["mile_gamma"] = float(self.model_train.edit_mile_gamma.text())
         config["T_max"] = int(self.model_train.edit_T_max.text())
 
         return config

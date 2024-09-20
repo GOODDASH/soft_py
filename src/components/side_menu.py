@@ -20,7 +20,7 @@ class SideMenu(QWidget):
         self.btns_layout = QVBoxLayout(self)
         self.btns_layout.addStretch()
         self.btns_layout.setSpacing(10)
-        self.btns_layout.setContentsMargins(10, 30, 0, 0)
+        self.btns_layout.setContentsMargins(10, 10, 0, 0)
         self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/connect.png")), "采集数据")
         self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/points.png")), "分析数据")
         self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/nn.png")), "训练模型")
