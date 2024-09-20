@@ -46,6 +46,8 @@ class State(QObject):
         self.rule_data = dict()
         self.orin_count = 0
         self.rule_count = 0
+        self.err_count = 0
+        self.err_idx = []
         self.orin_data_filepath = None
         self.rule_data_filepath = None
         self.rpm_temp_data_filepath = None
@@ -200,14 +202,11 @@ class State(QObject):
         # data: [counter, {key: value}], key: "nc_data", "card_temp", "error"
 
         # FIXME: 没有处理可能出现采集到None或者空列表的情况
-        # 保存采集的所有数据作为原始数据
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open(self.orin_data_filepath, "a", newline="") as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow([current_time] + extract_numbers(data[1]))
+        
         self.orin_count += 1
         self.signal_update_time.emit()
         # 分类并提取数据
+        err_flag = False  # 采集失败标记
         for key, value in data[1].items():
             if key == "nc_data":
                 if value is not None:
@@ -224,6 +223,7 @@ class State(QObject):
                     self.orin_data["nc_chan"].append(extract_numbers(value[4]))
                 else:
                     # 采集失败则自动复制最后一次的数据
+                    err_flag = True
                     self.orin_data["nc_reg_g"].append(self.orin_data["nc_reg_g"][-1])
                     self.orin_data["nc_axis_x"].append(self.orin_data["nc_axis_x"][-1])
                     self.orin_data["nc_axis_y"].append(self.orin_data["nc_axis_y"][-1])
@@ -231,6 +231,16 @@ class State(QObject):
                     self.orin_data["nc_chan"].append(self.orin_data["nc_chan"][-1])
             else:
                 self.orin_data[key].append(extract_numbers(value))
+
+        if err_flag:
+            self.err_count += 1
+            self.err_idx.append(self.orin_count)  # 记录发生错误的组数
+        else:
+            # 没有发生错误才保存采集的所有数据作为原始数据
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            with open(self.orin_data_filepath, "a", newline="") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow([current_time] + extract_numbers(data[1]))
         # 统计一分钟平均转速和温度变化
         self.save_rpm_temp_data()
         # 发送显示原始数据信号

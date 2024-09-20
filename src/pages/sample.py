@@ -68,6 +68,7 @@ class Sample(QWidget):
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setContentsMargins(0, 10, 10, 10)
         self.splitter = QSplitter(Qt.Horizontal)
+
         self.splitter.addWidget(self.sample_setting_area)
         self.splitter.addWidget(self.plot_area)
         self.splitter.setStretchFactor(0, 0)

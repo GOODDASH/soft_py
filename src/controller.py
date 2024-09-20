@@ -94,7 +94,7 @@ class Controller:
 
     def on_disconnect_tem_card(self):
         self.state.disconnect_tem_card()
-        self.view.show_message("采集卡断联", 2000)
+        self.view.show_message("采集卡断连", 2000)
 
     def on_connect_tem_card_status(self, flag):
         if flag[0]:
@@ -111,7 +111,7 @@ class Controller:
 
     def on_close_port(self):
         self.state.close_port()
-        self.view.show_message("量表断联", 2000)
+        self.view.show_message("量表断连", 2000)
 
     def on_open_port_status(self, flag):
         if flag:
@@ -166,7 +166,7 @@ class Controller:
     def on_update_time(self):
         h, m, s = self.convert_seconds(self.state.orin_count)
         self.view.show_message(
-            f"原始数据: {self.state.orin_count}组; 规则数据: {self.state.rule_count}组; 采集时长: {h}时{m}分{s}秒",
+            f"原始数据: {self.state.orin_count}组; 规则数据: {self.state.rule_count}组; 错误数据: {self.state.err_count}组; 采集时长: {h}时{m}分{s}秒",
             1000,
         )
 

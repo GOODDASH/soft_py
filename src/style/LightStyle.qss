@@ -153,7 +153,6 @@ QGroupBox::title {
 
 QSplitter::handle {
     background-color: rgb(236, 239, 241);
-    height: 5px;
 }
 
 QSplitter::handle:hover {
