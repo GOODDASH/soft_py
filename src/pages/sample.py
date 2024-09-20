@@ -39,7 +39,7 @@ class Sample(QWidget):
 
         self.sample_setting_area = QScrollArea()
         self.sample_setting_area.setWidgetResizable(True)
-        self.sample_setting_area.setMinimumWidth(400)
+        self.sample_setting_area.setMinimumWidth(300)
         self.sample_widget = QWidget()
         self.sample_widget_layout = QVBoxLayout(self.sample_widget)
         self.sample_widget_layout.setSpacing(10)

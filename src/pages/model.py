@@ -27,7 +27,7 @@ class Model(QWidget):
 
         self.model_setting_area = QScrollArea()
         self.model_setting_area.setWidgetResizable(True)
-        self.model_setting_area.setMinimumWidth(400)
+        self.model_setting_area.setMinimumWidth(300)
         self.model_widget = QWidget()
         self.model_widget_layout = QVBoxLayout(self.model_widget)
         self.model_widget_layout.setSpacing(10)

@@ -21,7 +21,7 @@ class Tsp(QWidget):
 
         self.tsp_setting_area = QScrollArea()
         self.tsp_setting_area.setWidgetResizable(True)
-        self.tsp_setting_area.setMinimumWidth(400)
+        self.tsp_setting_area.setMinimumWidth(300)
         self.tsp_widget = QWidget()
         self.tsp_widget_layout = QVBoxLayout(self.tsp_widget)
         self.tsp_widget_layout.setSpacing(10)

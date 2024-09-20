@@ -12,7 +12,8 @@ from src.components import CompenTemModel, CompenImportRpm, CompenGetPara
 class Compen(QWidget):
     signal_import_tem_model = Signal(dict)
     signal_import_rpm = Signal(str)
-    signal_cal_para = Signal()
+    signal_linear_fit = Signal()
+    signal_quadratic_fit = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -23,7 +24,7 @@ class Compen(QWidget):
 
         self.compen_setting_area = QScrollArea()
         self.compen_setting_area.setWidgetResizable(True)
-        self.compen_setting_area.setMinimumWidth(400)
+        self.compen_setting_area.setMinimumWidth(300)
         self.compen_widget = QWidget()
         self.compen_widget_layout = QVBoxLayout(self.compen_widget)
         self.compen_widget_layout.setSpacing(10)
@@ -52,4 +53,5 @@ class Compen(QWidget):
     def connect_slots(self):
         self.import_tem_model.signal_import_tem_model.connect(self.signal_import_tem_model)
         self.import_rpm.signal_import_rpm.connect(self.signal_import_rpm)
-        self.get_para.btn_cal_para.clicked.connect(self.signal_cal_para)
+        self.get_para.btn_linear_fit.clicked.connect(self.signal_linear_fit)
+        self.get_para.btn_quadratic_fit.clicked.connect(self.signal_quadratic_fit)
