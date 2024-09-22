@@ -227,9 +227,7 @@ class Controller:
         self.state.get_ga_tsp_res(pop_size=para[2], iters=para[3])
         end_time = time.time()
         cos_time = end_time - start_time
-        self.view.show_message(
-            f"耗时:{cos_time:.2f}s, 迭代测点筛选完成 {self.state.tsp_res}", 5000
-        )
+        self.view.show_message(f"耗时:{cos_time:.2f}s, 迭代测点筛选完成 {self.state.tsp_res}", 5000)
         self.view.tsp_page.tsp_res.edit_tsp.setText(",".join(map(str, self.state.tsp_res)))
         self.view.setCursor(Qt.CursorShape.ArrowCursor)  # 恢复鼠标样式
 

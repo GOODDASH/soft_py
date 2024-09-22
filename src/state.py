@@ -202,7 +202,7 @@ class State(QObject):
         # data: [counter, {key: value}], key: "nc_data", "card_temp", "error"
 
         # FIXME: 没有处理可能出现采集到None或者空列表的情况
-        
+
         self.orin_count += 1
         self.signal_update_time.emit()
         # 分类并提取数据

@@ -11,7 +11,7 @@ pip install virtualenv
 python -m venv .env
 .env\Scripts\activate
 pip install -r requirements.txt
-.\.env\Scripts\python.exe .\main.py   
+.env\Scripts\python.exe .\main.py   
 ```
 
 目前存在的问题:
@@ -20,7 +20,7 @@ pip install -r requirements.txt
 - 向机床导入多元线性回归的拟合参数功能还没测试
 - 很多输入框获取数时直接采用的是 `int(xxx.text())` ，只要少部分加了`QValidator`，如果转换错误会导致程序崩溃
 
-使用视频:
+使用视频（过时）:
 
 <img src="doc/sample.gif" style="zoom:33%;" />
 
@@ -58,7 +58,7 @@ black --line-length 100 ./src/
 
 - `src/view.py`负责显示界面和产生交互信息, 所有界面产生的信号都汇聚在了`Class View`下
 
-- `src/state.py`负责存储程序状态和逻辑处理，包括数据的采集、分析、模型训练，同样也汇聚了所有信号
+- `src/state.py`负责存储程序状态和逻辑处理，包括数据的采集、分析、模型训练、参数拟合，同样也汇聚了所有信号
 
 - `src/controller.py`负责连接交互和逻辑，主要连接两边的`Qt信号`和`Qt槽函数`
 

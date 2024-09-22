@@ -26,7 +26,7 @@ class Tsp(QWidget):
         self.tsp_setting_area.setMinimumWidth(SIDE_MIN_WIDTH)
         self.tsp_widget_container = QWidget()
         self.tsp_widget_container_layout = QHBoxLayout(self.tsp_widget_container)
-        # self.tsp_widget_container_layout.setAlignment(Qt.AlignTop) 
+        # self.tsp_widget_container_layout.setAlignment(Qt.AlignTop)
         self.tsp_widget = QWidget()
         self.tsp_widget.setMaximumWidth(500)
         self.tsp_widget_layout = QVBoxLayout(self.tsp_widget)

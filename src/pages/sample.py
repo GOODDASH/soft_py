@@ -20,6 +20,7 @@ from src.style.gui_const import SIDE_MIN_WIDTH
 
 # FIXME: 右侧plot量表读书部分的单位不是微米
 
+
 class Sample(QWidget):
     signal_connect_nc = Signal(list)
     signal_disconnect_nc = Signal()
@@ -46,7 +47,7 @@ class Sample(QWidget):
         self.sample_setting_area.setMinimumWidth(SIDE_MIN_WIDTH)
         self.sample_widget_container = QWidget()
         self.sample_widget_container_layout = QHBoxLayout(self.sample_widget_container)
-        # self.sample_widget_container_layout.setAlignment(Qt.AlignTop) 
+        # self.sample_widget_container_layout.setAlignment(Qt.AlignTop)
         self.sample_widget = QWidget()
         self.sample_widget.setMaximumWidth(500)
         self.sample_widget_layout = QVBoxLayout(self.sample_widget)

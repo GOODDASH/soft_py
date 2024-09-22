@@ -7,7 +7,16 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QShortcut,
 )
-from PyQt5.QtCore import pyqtSignal as Signal, Qt, QTimer, QSize, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QPoint
+from PyQt5.QtCore import (
+    pyqtSignal as Signal,
+    Qt,
+    QTimer,
+    QSize,
+    QPropertyAnimation,
+    QEasingCurve,
+    QParallelAnimationGroup,
+    QPoint,
+)
 from PyQt5.QtGui import QKeySequence, QPixmap, QIcon
 
 from src.pages import Sample, Tsp, Model, Compen
@@ -102,7 +111,7 @@ class View(QMainWindow):
         self.info_label = QLabel()
         self.info_label.setObjectName("statusLabel")
         self.info_label.setAlignment(Qt.AlignCenter)
-        
+
         self.info_container = QWidget()
         self.info_container.setObjectName("statusBar")
         self.info_container.setFixedHeight(40)
@@ -114,7 +123,7 @@ class View(QMainWindow):
         self.statusBar().setSizeGripEnabled(False)
         self.statusBar().addPermanentWidget(self.info_container, 1)
         self.statusBar().hide()
-        
+
         # 定时器，用于隐藏消息
         self.timer = QTimer()
         self.timer.timeout.connect(self.clear_message)
@@ -195,15 +204,15 @@ class View(QMainWindow):
         config = self.tsp_page.update_config(config)
         config = self.model_page.update_config(config)
         return config
-    
+
     def show_message(self, message, timeout=0):
         self.statusBar().show()
         self.info_label.setText(message)
-        
+
         # 如果设置了超时时间，启动定时器
         if timeout > 0:
             self.timer.start(timeout)
-    
+
     def clear_message(self):
         """清除居中的消息."""
         self.statusBar().hide()

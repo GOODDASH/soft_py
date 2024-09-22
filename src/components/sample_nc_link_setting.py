@@ -42,7 +42,6 @@ class NCLinkSetting(QGroupBox):
         self.vlayout.addLayout(self.formLayout1)
         self.vlayout.addWidget(self.btn_connect_nc, 0, Qt.AlignRight)
 
-
         self.btn_connect_nc.clicked.connect(self.on_btn_connect_nc)
 
     def on_btn_connect_nc(self):
