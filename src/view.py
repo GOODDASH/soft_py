@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import (
     QWidget,
     QLabel,
-    QPushButton,
     QStackedWidget,
     QMainWindow,
     QHBoxLayout,
@@ -11,13 +10,12 @@ from PyQt5.QtCore import (
     pyqtSignal as Signal,
     Qt,
     QTimer,
-    QSize,
     QPropertyAnimation,
     QEasingCurve,
     QParallelAnimationGroup,
     QPoint,
 )
-from PyQt5.QtGui import QKeySequence, QPixmap, QIcon
+from PyQt5.QtGui import QKeySequence
 
 from src.pages import Sample, Tsp, Model, Compen
 from src.components import SideMenu
@@ -95,19 +93,6 @@ class View(QMainWindow):
         vLayout.addWidget(self.side_menu)
         vLayout.addWidget(self.stack)
 
-        # self.nc_connected_btn = QPushButton(self)
-        # self.nc_connected_btn.setObjectName("statusBtn")
-        # self.nc_connected_btn.setToolTip("已连接机床")
-        # self.nc_connected_btn.setIcon(QIcon(r"src\icons\link.png"))
-        # self.nc_connected_btn.setFixedSize(QSize(30, 30))
-        # self.nc_connected_btn.hide()
-
-        # self.nc_disconnected_btn = QPushButton(self)
-        # self.nc_disconnected_btn.setObjectName("statusBtn")
-        # self.nc_disconnected_btn.setToolTip("未连接机床")
-        # self.nc_disconnected_btn.setIcon(QIcon(r"src\icons\unlink.png"))
-        # self.nc_disconnected_btn.setFixedSize(QSize(40, 40))
-
         self.info_label = QLabel()
         self.info_label.setObjectName("statusLabel")
         self.info_label.setAlignment(Qt.AlignCenter)
@@ -116,7 +101,7 @@ class View(QMainWindow):
         self.info_container.setObjectName("statusBar")
         self.info_container.setFixedHeight(40)
         layout = QHBoxLayout()
-        layout.setContentsMargins(0, 5, 0, 5)
+        layout.setContentsMargins(0, 3, 0, 3)
         layout.addWidget(self.info_label, 1, Qt.AlignCenter)
         self.info_container.setLayout(layout)
 
@@ -128,9 +113,7 @@ class View(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.clear_message)
 
-        with open("src/style/LightStyle.qss", "r") as file:
-            self.setStyleSheet(file.read())
-
+        self.load_style_sheet()
         self.adapt_background_color()
         self.create_shortcut()
 
@@ -274,6 +257,8 @@ class View(QMainWindow):
         next_page.activated.connect(self.next_page)
         last_page = QShortcut(QKeySequence("Ctrl+Up"), self)
         last_page.activated.connect(self.last_page)
+        refresh_qss = QShortcut(QKeySequence("Ctrl+R"), self)
+        refresh_qss.activated.connect(self.load_style_sheet)
 
     def next_page(self):
         if self.cur_page < len(self.side_menu.btns) - 1:
@@ -285,6 +270,10 @@ class View(QMainWindow):
             self.cur_page -= 1
         self.side_menu.btns[self.cur_page].click()
 
+    def load_style_sheet(self):
+        with open("src/style/LightStyle.qss", "r") as file:
+            self.setStyleSheet(file.read())
+
     def closeEvent(self, _event):
         self.signal_close_window.emit()
 
@@ -295,7 +284,7 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
     from PyQt5.QtWidgets import QApplication
 
-    plt.rcParams["font.sans-serif"] = ["Microsoft YaHei"]
+    plt.rcParams["font.sans-serif"] = ["Sarasa UI SC"]
     plt.rcParams["font.size"] = 14
     plt.rcParams["axes.unicode_minus"] = False
 

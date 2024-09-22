@@ -1,6 +1,6 @@
 QWidget { 
     background-color: rgb(236, 239, 241);
-    font-family: 'Microsoft YaHei'; 
+    font-family: 'Sarasa UI SC'; 
     font-size: 18px; 
 }
 
@@ -19,6 +19,8 @@ QPushButton#btn_add_card:hover {
     padding: 0px 0px 2px 0px;
     background-color: rgb(199, 208, 211);
 }
+
+
 
 QPushButton {
     padding: 5px 10px 5px 10px;
@@ -63,9 +65,9 @@ QToolButton:pressed {
 }
 
 QRadioButton::indicator { 
-    width: 16px;
-    height: 16px;
-    border-radius: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
     border: 2px solid rgb(96, 125, 139);
     background-color: rgb(249, 249, 249);
 }
@@ -76,8 +78,8 @@ QRadioButton::indicator:hover {
 }
 
 QRadioButton::indicator:checked {
-    border: 3px solid rgb(96, 125, 139);
-    background-color: rgb(144, 164, 174);
+    border: 2px solid rgb(144, 164, 174);
+    background-color: rgb(96, 125, 139);
 }
 
 QLineEdit {
@@ -103,13 +105,16 @@ QLineEdit:focus {
     padding-left: 5px;
 }
 
+/*-----QComboBox-----*/
+
+
+
+
+
 QComboBox {
     background-color: rgb(249, 249, 249);
     border: 1px solid rgb(100, 100, 100);
-    border-top-left-radius: 10px; 
-    border-top-right-radius: 0px; 
-    border-bottom-left-radius: 10px; 
-    border-bottom-right-radius: 0px; 
+    border-radius: 10px;
     padding-left: 5px;
 }
 
@@ -130,6 +135,23 @@ QComboBox QAbstractItemView::item:hover {
 QComboBox:hover {
     background-color: rgb(207, 216, 220);
     padding-left: 5px;
+}
+
+QComboBox::drop-down{
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+    border-left-width: 0px;
+    border-left-color: darkgray;
+    border-left-style: solid; 
+    border-top-right-radius: 3px; 
+    border-bottom-right-radius: 3px;
+}
+
+QComboBox::down-arrow{
+	image: url("./src/icons/down_arr.png");
+	width:10px;
+	height:10px;
 }
 
 QGroupBox {

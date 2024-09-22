@@ -28,9 +28,9 @@ class SinglePlotWidget(QWidget):
         self.ax_tem.spines["right"].set_visible(False)
         self.ax_tem.spines["top"].set_visible(False)
         self.canvas_tem.figure.tight_layout()
-        self.toolbar_tem = NavigationToolbar(self.canvas_tem, self.tem_plot)
+        # self.toolbar_tem = NavigationToolbar(self.canvas_tem, self.tem_plot)
         self.vLayout_tem_plot.addWidget(self.canvas_tem)
-        self.vLayout_tem_plot.addWidget(self.toolbar_tem)
+        # self.vLayout_tem_plot.addWidget(self.toolbar_tem)
         self.vLayout_tem_plot.setContentsMargins(0, 0, 0, 0)
         self.vLayout_tem_plot.setSpacing(0)
 
@@ -44,9 +44,9 @@ class SinglePlotWidget(QWidget):
         self.ax_err.spines["right"].set_visible(False)
         self.ax_err.spines["top"].set_visible(False)
         self.canvas_err.figure.tight_layout()
-        self.toolbar_err = NavigationToolbar(self.canvas_err, self.err_plot)
+        # self.toolbar_err = NavigationToolbar(self.canvas_err, self.err_plot)
         self.vLayout_err_plot.addWidget(self.canvas_err)
-        self.vLayout_err_plot.addWidget(self.toolbar_err)
+        # self.vLayout_err_plot.addWidget(self.toolbar_err)
         self.vLayout_err_plot.setContentsMargins(0, 0, 0, 0)
         self.vLayout_err_plot.setSpacing(0)
 

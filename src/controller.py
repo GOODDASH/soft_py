@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 from src.view import View
 from src.state import State
 
-fontname = "Microsoft YaHei"
+fontname = "Sarasa UI SC"
 plt.rcParams["font.sans-serif"] = [fontname]
 plt.rcParams["font.size"] = 12
 plt.rcParams["axes.unicode_minus"] = False
@@ -88,7 +88,7 @@ class Controller:
             QMessageBox.critical(self.view, "错误", f"{flag[1]}")
 
     def on_connect_tem_card(self, para):
-        self.view.setCursor(Qt.CursorShape.WaitCursor)
+        self.view.setCursor(Qt.CursorShape.BusyCursor)
         self.state.connect_tem_card(para)
         self.view.setCursor(Qt.CursorShape.ArrowCursor)
 

@@ -1,32 +1,82 @@
-## 1. 配置运行环境
+## 1. 配置环境
+
+#### 1.1. 安装依赖
+
+- 安装`更纱黑体`字体，[下载链接](https://mirrors.tuna.tsinghua.edu.cn/github-release/be5invis/Sarasa-Gothic/Sarasa%20Gothic%2C%20Version%201.0.21/SarasaUiSC-TTF-1.0.21.7z)
 
 - 安装虚拟环境库
-- 在当前目录创建虚拟环境，位置在`.env`文件夹
-- 激活虚拟环境
-- 安装依赖
-- 运行程序
-
 ```bash
 pip install virtualenv
+```
+- 在当前目录创建虚拟环境，位置在`.env`文件夹
+```bash
 python -m venv .env
+```
+- 激活虚拟环境
+```bash
 .env\Scripts\activate
+```
+- 在虚拟环境中安装依赖
+```bash
 pip install -r requirements.txt
+```
+- 运行程序
+```bash
 .env\Scripts\python.exe .\main.py   
 ```
 
-目前存在的问题:
+如果安装完字体, `matplotlib`还是提示缺失字体，删除`C:\Users\xxx\.matplotlib`文件夹下的所有文件后重试
 
-- 连接设备成功后，如果中途断联导致采集到None，或者空列表会出错，因为没有添加错误处理
+#### 1.2. 待完成事项
+
+- 连接设备成功后，如果中途断联导致采集到`None`或者`[]`会出错，需要后续添加错误处理
 - 向机床导入多元线性回归的拟合参数功能还没测试
-- 很多输入框获取数时直接采用的是 `int(xxx.text())` ，只要少部分加了`QValidator`，如果转换错误会导致程序崩溃
+- 很多输入框获取数时直接采用的是 `int(xxx.text())` ，只有少部分加了`QValidator`，如果转换错误会导致程序崩溃
 
-使用视频（过时）:
+#### 1.3. 使用视频（outdated）:
 
 <img src="doc/sample.gif" style="zoom:33%;" />
 
 <img src="doc/tsp.gif" style="zoom:33%;" />
 
 <img src="doc/model.gif" style="zoom:33%;" />
+
+#### 1.4. 使用示例
+
+概念解释：
+
+- 原始数据：点击`开始采集`后，数据采集线程每一秒采集到的所有数据
+- 规则数据：可以直接作为热误差模型训练数据的，经过筛选过的数据
+
+##### 1.4.1. 连接多张采集卡进行温度测点筛选实验
+
+- 连接机床（可选），当需要保存工况-温度数据 或 采样规则为`坐标停留`才必须要连接机床
+- 配置每张采集卡参数，一般只需修改`IP`，当采集卡有空缺位时可以用 `排除序号` 来进行剔除，避免影响图示
+- 连接量表，暂时只能连接一个串口，后续准备改成可以添加的形式
+- 选择`采样规则`（后面详细解释）, `采集温度`选择采集卡
+- 选择保存目录（可选），若没选择，则自动保存在`data`文件夹下名为`xxx_orin\rule.csv`（原始\规则）
+- 点击`开始采集`即可开始采集数据
+
+##### 1.4.2. 采样规则简介
+
+`定时采集`：每隔设定的时间采集为规则数据
+
+`坐标停留`：检测数控系统选择的坐标轴、坐标系下的值停留3秒不变则视为一次主动碰表，采集为规则数据
+
+`量表停留`：检测量表读数在初始值正负设定的阈值内停留3秒视为一次主动碰表，采集为规则数据
+
+##### 1.4.3. 采集过程中
+
+- 状态栏会显示目前采集的原始数据、规则数据、错误数据的组数以及采集时长
+- 右侧图像可以切换显示 `温度\热误差` 以及 `原始\规则数据`
+- TODO: 计划添加一块表格视图用于显示具体数值
+
+##### 1.4.4 通过机床G寄存器采集温度
+
+- 参考 [1.4.1](#141-连接多张采集卡进行温度测点筛选实验)
+- `采集温度`选择寄存器，下方可以设置采集的温度数量
+
+##### 1.4.5 
 
 ## 2. 开发
 
@@ -98,3 +148,8 @@ black --line-length 100 ./src/
 `src\thread\model_train_thread.py`(非必要)
 
 - 如果用到了除了`torch_geometric`和`torch`的`DataLoader`另外的`DataLoader`, 还需在`get_loss`方法中添加对应计算损失值的方法
+
+### 2.5 调试软件
+
+- 采集卡(Modbus TCP)用`Modbus Slave`进行调试，[Modbus Slave](https://filecr.com/windows/modbus-slave/)
+- 量表用`com0com`(创建串口间的映射)和`PuTTY`(向串口输出值)进行调试，[com0com](https://sourceforge.net/projects/com0com/)，[PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html);

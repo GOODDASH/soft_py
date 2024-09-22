@@ -39,7 +39,7 @@ class ModelPlot(QWidget):
         vlayout = QVBoxLayout(plot_widget)
 
         self.canvas1 = FigureCanvas(Figure(figsize=(5, 3)))
-        self.toolbar1 = NavigationToolbar(self.canvas1)
+        # self.toolbar1 = NavigationToolbar(self.canvas1)
         self.ax1 = self.canvas1.figure.add_subplot(1, 2, 1)
         self.ax2 = self.canvas1.figure.add_subplot(1, 2, 2)
 
@@ -54,7 +54,7 @@ class ModelPlot(QWidget):
         self.ax2.spines["top"].set_visible(False)
         self.canvas1.figure.tight_layout()
         vlayout.addWidget(self.canvas1)
-        vlayout.addWidget(self.toolbar1)
+        # vlayout.addWidget(self.toolbar1)
         vlayout.setStretch(0, 1)
         vlayout.setStretch(1, 0)
         vlayout.setContentsMargins(0, 0, 0, 0)
@@ -66,7 +66,7 @@ class ModelPlot(QWidget):
         pred_plot = QWidget()
         vlayout = QVBoxLayout(pred_plot)
         self.canvas2 = FigureCanvas(Figure(figsize=(5, 3)))
-        self.toolbar2 = NavigationToolbar(self.canvas2)
+        # self.toolbar2 = NavigationToolbar(self.canvas2)
         self.ax3 = self.canvas2.figure.add_subplot(1, 1, 1)
 
         (self.line_pred,) = self.ax3.plot([], label="预测值", color="#003049")
@@ -77,7 +77,7 @@ class ModelPlot(QWidget):
         self.ax3.set_xlabel("数据点")
         self.canvas2.figure.tight_layout()
         vlayout.addWidget(self.canvas2)
-        vlayout.addWidget(self.toolbar2)
+        # vlayout.addWidget(self.toolbar2)
         vlayout.setStretch(0, 1)
         vlayout.setStretch(1, 0)
         vlayout.setContentsMargins(0, 0, 0, 0)

@@ -91,7 +91,7 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
     from PyQt5.QtWidgets import QApplication
 
-    plt.rcParams["font.sans-serif"] = ["Microsoft YaHei"]
+    plt.rcParams["font.sans-serif"] = ["Sarasa UI SC"]
     plt.rcParams["font.size"] = 14
     plt.rcParams["axes.unicode_minus"] = False
 
