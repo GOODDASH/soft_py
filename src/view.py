@@ -51,8 +51,8 @@ class View(QMainWindow):
 
     signal_import_tem_model = Signal(dict)
     signal_import_rpm = Signal(str)
-    signal_linear_fit = Signal()
-    signal_quadratic_fit = Signal()
+    signal_start_compen = Signal(dict)
+    signal_stop_compen = Signal()
 
     signal_close_window = Signal()
 
@@ -172,10 +172,10 @@ class View(QMainWindow):
         self.compen_page.signal_import_tem_model.connect(self.signal_import_tem_model)
         # 导入采集的转速数据
         self.compen_page.signal_import_rpm.connect(self.signal_import_rpm)
-        # 计算一阶代理模型参数
-        self.compen_page.signal_linear_fit.connect(self.signal_linear_fit)
-        # 计算二阶代理模型参数
-        self.compen_page.signal_quadratic_fit.connect(self.signal_quadratic_fit)
+        # 开始代理模型补偿
+        self.compen_page.signal_start_compen.connect(self.signal_start_compen)
+        # 停止代理模型补偿
+        self.compen_page.signal_stop_compen.connect(self.signal_stop_compen)
 
     def vis_config(self, config: dict):
         self.sample_page.vis_config(config)

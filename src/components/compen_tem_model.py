@@ -38,6 +38,7 @@ class CompenTemModel(QGroupBox):
         self.btn_layout.addWidget(self.btn_import)
 
         self.vLayout = QVBoxLayout(self)
+        self.vLayout.setSpacing(10)
         self.vLayout.addLayout(self.fLayout)
         self.vLayout.addLayout(self.btn_layout)
 

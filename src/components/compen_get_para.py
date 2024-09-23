@@ -21,35 +21,51 @@ from PyQt5.QtWidgets import (
 
 
 class CompenGetPara(QGroupBox):
+    signal_start_compen = Signal(dict)
+    signal_stop_compen = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("参数拟合")
+        self.setTitle("代理补偿")
 
-        self.btn_layout = QHBoxLayout()
-        self.btn_linear_fit = QPushButton("一阶拟合")
-        self.btn_quadratic_fit = QPushButton("二阶拟合")
-        self.btn_layout.addWidget(self.btn_linear_fit)
-        self.btn_layout.addWidget(self.btn_quadratic_fit)
+        self.fLayout = QFormLayout()
+        self.combo_fit_degree = QComboBox()
+        self.combo_fit_degree.addItems(["一阶拟合", "二阶拟合"])
+        self.inter_hLayout = QHBoxLayout()
+        self.edit_fit_inter = QLineEdit("10")
+        self.edit_fit_inter.setPlaceholderText("模型参数更新间隔")
+        self.inter_hLayout.addWidget(self.edit_fit_inter)
+        self.inter_hLayout.addWidget(QLabel("min"))
+        self.inter_hLayout.setContentsMargins(0, 0, 0, 0)
+        self.fLayout.addRow("代理阶数:", self.combo_fit_degree)
+        self.fLayout.addRow("更新间隔:", self.inter_hLayout)
+
+        self.btn_start_compen = QPushButton("开始补偿")
+        self.btn_start_compen.clicked.connect(self.on_start_compen)
 
         self.fit_res_layout = QVBoxLayout()
 
-        self.hLayout = QHBoxLayout()
-        self.check_edit = QCheckBox("编辑")
-        self.check_negative = QCheckBox("取反")
-        self.btn_send_para = QPushButton("导入参数")
-        self.hLayout.addStretch()
-        self.hLayout.addWidget(self.check_edit)
-        self.hLayout.addWidget(self.check_negative)
-        self.hLayout.addWidget(self.btn_send_para)
-
         self.vLayout = QVBoxLayout(self)
-        self.vLayout.addLayout(self.btn_layout)
-        self.vLayout.addWidget(QLabel("拟合结果:"))
+        self.vLayout.setSpacing(10)
+        self.vLayout.addLayout(self.fLayout)
+        self.vLayout.addWidget(self.btn_start_compen, 0, Qt.AlignRight)
         self.vLayout.addLayout(self.fit_res_layout)
-        self.vLayout.addLayout(self.hLayout)
+
+    def on_start_compen(self):
+        self.btn_start_compen.clicked.disconnect()
+        self.btn_start_compen.setText("停止补偿")
+        self.btn_start_compen.clicked.connect(self.on_stop_compen)
+        degree = 1 if self.combo_fit_degree.currentText() == "一阶拟合" else 2
+        interval = int(self.edit_fit_inter.text())
+        self.signal_start_compen.emit({"degree": degree, "interval": interval})
+    
+    def on_stop_compen(self):
+        self.btn_start_compen.clicked.disconnect()
+        self.btn_start_compen.setText("开始补偿")
+        self.btn_start_compen.clicked.connect(self.on_start_compen)
+        self.signal_stop_compen.emit()
 
     def show_fit_para(self, degree, coef):
-        print(coef)
         # 清空上次
         while self.fit_res_layout.count():
             item = self.fit_res_layout.takeAt(0)

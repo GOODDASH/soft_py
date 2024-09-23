@@ -1,6 +1,7 @@
 import os
 import csv
 import datetime
+import numpy as np
 from typing import Optional
 from collections import deque
 from src.core.nc_link import NCLink
@@ -9,7 +10,7 @@ from src.core.yaml_handler import YamlHandler
 from src.core.serial_port_reader import SerialPortReader
 from src.thread.data_collector_thread import DataCollectorThread
 from src.core.func import extract_numbers
-from PyQt5.QtCore import pyqtSignal as Signal, QObject
+from PyQt5.QtCore import pyqtSignal as Signal, QObject, QTimer
 
 
 MAX_DATA_LEN = 3600 * 2  # 默认原始数据最大长度
@@ -34,52 +35,91 @@ class State(QObject):
     signal_train_val_loss = Signal(tuple)
     signal_train_finished = Signal(tuple)
 
+    signal_fit_coef = Signal(list)
+
     def __init__(self):
         super().__init__()
         self.nc_client: Optional[NCLink] = None
         self.tem_modbus_client: Optional[ModbusTCP] = None
         self.serial_port_client: Optional[SerialPortReader] = None
 
-        self.sample_path = None
-        self.data_collector_thread: Optional[DataCollectorThread] = None
-        self.orin_data = dict()
-        self.rule_data = dict()
-        self.orin_count = 0
-        self.rule_count = 0
-        self.err_count = 0
-        self.err_idx = []
-        self.orin_data_filepath = None
-        self.rule_data_filepath = None
-        self.rpm_temp_data_filepath = None
-        self.avg_rpm = []
-        self.total_rpm = 0
-        self.show_orin = True
-        self.tem_from_nc = True
-        self.nc_reg_num = None
+        # 采集文件夹路径
+        self.sample_path = None  
+        # 采集线程
+        self.data_collector_thread: Optional[DataCollectorThread] = None  
+        # 采集的原始数据
+        self.orin_data = dict() 
+        # 采集的规则数据 
+        self.rule_data = dict()  
+        # 采集原始数据计数
+        self.orin_count = 0  
+        # 采集规则数据计数
+        self.rule_count = 0  
+        # 采集错误数据计数
+        self.err_count = 0  
+        # 采集错误数据索引
+        self.err_idx = []  
+        # 采集原始数据保存路径
+        self.orin_data_filepath = None  
+        # 采集规则数据保存路径
+        self.rule_data_filepath = None  
+        # 采集温升数据保存路径
+        self.rpm_temp_data_filepath = None 
+        # 采集的平均转速 
+        self.avg_rpm = []  
+        # 一分钟内统计的60秒总转速
+        self.total_rpm = 0  
+        # 是否显示原始采集数据
+        self.show_orin = True  
+        # 是否从NC采集温度
+        self.tem_from_nc = True  
+        # 从NC采集温升的寄存器个数
+        self.nc_reg_num = None  
 
+        # 导入的数据
         self.data = None
+        # 聚类结果
         self.cluster_res = None
+        # 测点筛选结果
         self.tsp_res = None
         # 存储不同模型是否需要重新创建数据集的布尔值字典
         self.flag_need_create_new_datasets = dict()
+        # 训练热误差模型所用数据集
         self.datasets = None
 
+        # 五折交叉验证划分
         self.kf = None
+        # 热误差预测模型
         self.err_model = None
+        # 图模型的边索引
         self.edge_index = None
-        self.best_model = None
+        # 训练结束，在测试数据集上表现最好的热误差模型
+        self.best_err_model = None
 
+        # 温度预测模型
         self.tem_model = None
-        self.init_abs_temp = None  # 记录第一次获取到的绝对温度
+        # 记录第一次获取到的绝对温度
+        self.init_abs_temp = None  
+        # 记录最近三分钟温升(相对温度)
         self.his_rel_temp = deque(
             [[0 for _ in range(6)], [0 for _ in range(6)], [0 for _ in range(6)]], maxlen=3
-        )  # 记录最近三分钟温升(相对温度)
-        self.pred_temp_numpy = None  # 温度模型预测的温升
-        self.pred_err_numpy = None  # 热误差模型预测的热误差
-        self.sampled_rpm = None  # 平均转速数组
-        self.coef_linear = None  # 一阶拟合的参数
-        self.coef_quadratic = None  # 二阶拟合的参数
+        )  
+        # 温度模型预测的温升
+        self.pred_temp_numpy = None  
+        # 热误差模型预测的热误差
+        self.pred_err_numpy = None  
+        # 平均转速数组
+        self.sampled_rpm = None  
+        # 代理模型拟合的参数
+        self.coef_fit = None  
+        # 代理补偿定时器
+        self.compen_timer = QTimer()
+        # 更新间隔
+        self.compen_interval = None
+        # 当前更新参数次数计数
+        self.compen_count = 0
 
+        # 从保存的配置文件中读取配置
         self.ui_para = YamlHandler("res/config.yml")
         self.ui_para.read()
 
@@ -89,6 +129,8 @@ class State(QObject):
         self.disconnect_nc()
         self.disconnect_tem_card()
         self.close_port()
+        self.stop_compen()
+        
 
     def connect_nc(self, para):
         from src.core.nc_link import NCLink
@@ -641,7 +683,25 @@ class State(QObject):
 
         data = np.loadtxt(file_path, delimiter=",")
         self.sampled_rpm = data[1:, 0]  # 第一行的没有用, 从第二行开始
-        # print(self.sampled_rpm)
+
+    def start_compen(self, para: dict) -> None:
+        """
+        开始代理补偿
+        ----
+        - para["degree"]:int 参数拟合阶数
+        - para["interval"]: int 补偿间隔
+        """
+        self.compen_interval = para["interval"]
+        # 在创建定时器时就执行一次, 不然要等一段时间才能开始补偿
+        self.cal_para(para["degree"])
+        self.compen_timer.timeout.connect(lambda: self.cal_para(para["degree"]))
+        self.compen_timer.start(para["interval"]*60_000)
+
+    def stop_compen(self) -> None:
+        """
+        停止代理补偿
+        """
+        self.compen_timer.stop()
 
     def cal_para(self, degree: int) -> None:
         """
@@ -656,17 +716,22 @@ class State(QObject):
 
         # 历史温度变化趋势转换为tensor
         his_tem_tensor = torch.tensor(self.his_rel_temp, dtype=torch.float32).unsqueeze(0)
-        print(his_tem_tensor.shape)
+        print(f"his_tem_tensor.shape: {his_tem_tensor.shape}")
         # 未来平均转速转换为tensor
-        rpm_tensor = torch.tensor(self.sampled_rpm, dtype=torch.float32).unsqueeze(0)
-        print(rpm_tensor.shape)
+        start_idx = self.compen_count * self.compen_interval
+        end_idx = (self.compen_count + 1) * self.compen_interval
+        print(f"start_idx: {start_idx}, end_idx: {end_idx}")
+        if end_idx <= len(self.sampled_rpm):
+            rpm_tensor = torch.tensor(self.sampled_rpm[start_idx:end_idx], dtype=torch.float32).unsqueeze(0)
+        else:
+            return
+        print(f"rpm_tensor.shape: {rpm_tensor.shape}")
         # 预测温度
         pred_temp = self.tem_model(his_tem_tensor, rpm_tensor)
-        print(pred_temp.shape)
+        print(f"pred_temp.shape: {pred_temp.shape}")
         # 根据模型类型计算预测的热误差, 先用最简单的BPNN
         if isinstance(self.err_model, BPNN):
             pred_err = self.err_model(pred_temp)
-            print(pred_err.shape)
         elif isinstance(self.err_model, GATLSTM):
             from torch_geometric.data import Data
 
@@ -681,19 +746,23 @@ class State(QObject):
         else:
             # 未知模型类型
             return
+        
+        print(f"pred_err.shape: {pred_err.shape}")
 
         # 去除多余维度并转换为numpy数组
         self.pred_temp_numpy = pred_temp.squeeze(0).detach().numpy()
         self.pred_err_numpy = pred_err.squeeze(0).detach().numpy()
-        print(self.pred_temp_numpy.shape)
-        print(self.pred_err_numpy.shape)
+        print(f"self.pred_temp_numpy.shape: {self.pred_temp_numpy.shape}")
+        print(f"self.pred_err_numpy.shape: {self.pred_err_numpy.shape}")
+
+        # FIXME: 换成绝对温度再去拟合
 
         fit_model = PolyLeastSquares(degree)
         fit_model.fit(self.pred_temp_numpy, self.pred_err_numpy)
 
-        if degree == 1:
-            self.coef_linear = fit_model.get_coefficients()
-            print(self.coef_linear.shape)
-        elif degree == 2:
-            self.coef_quadratic = fit_model.get_coefficients()
-            print(self.coef_quadratic.shape)
+        self.compen_count += 1
+
+        self.coef_fit = fit_model.get_coefficients()
+        print(self.coef_fit.shape)
+
+        self.signal_fit_coef.emit([degree, self.coef_fit])

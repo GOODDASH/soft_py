@@ -63,8 +63,9 @@ class Controller:
 
         self.view.signal_import_tem_model.connect(self.on_import_tem_model)
         self.view.signal_import_rpm.connect(self.on_import_rpm)
-        self.view.signal_linear_fit.connect(self.on_linear_fit)
-        self.view.signal_quadratic_fit.connect(self.on_quadratic_fit)
+        self.view.signal_start_compen.connect(self.on_start_compen)
+        self.state.signal_fit_coef.connect(self.on_ui_show_fit_coef)
+        self.view.signal_stop_compen.connect(self.on_stop_compen)
 
     # 关闭应用前从界面更新配置字典给state进行保存
     def on_close_window(self):
@@ -315,19 +316,24 @@ class Controller:
         self.view.show_message(
             f"训练完成, 最优测试损失: {para[2]:.3f}, 出现在第{para[0]+1}折训练的第{para[1]+1}步"
         )
-        self.state.best_model = para[3]  # 保存最佳模型
+        self.state.best_err_model = para[3]  # 保存最佳模型
 
     def on_import_tem_model(self, para):
         self.state.import_tem_model(para)
+        self.view.show_message("温度模型导入完成", 2000)
 
     def on_import_rpm(self, file_path):
         self.state.import_rpm_file(file_path)
         self.view.compen_page.import_rpm.show_avg_rpm(self.state.sampled_rpm)
 
-    def on_linear_fit(self):
-        self.state.cal_para(1)
-        self.view.compen_page.get_para.show_fit_para(1, self.state.coef_linear)
+    def on_start_compen(self, para):
+        # para["degree", "interval"]
+        self.state.start_compen(para)
 
-    def on_quadratic_fit(self):
-        self.state.cal_para(2)
-        self.view.compen_page.get_para.show_fit_para(2, self.state.coef_quadratic)
+    def on_ui_show_fit_coef(self, para):
+        print(para)
+        self.view.compen_page.get_para.show_fit_para(para[0], para[1])
+
+    def on_stop_compen(self):
+        self.state.stop_compen()
+

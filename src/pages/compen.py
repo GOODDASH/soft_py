@@ -14,8 +14,8 @@ from src.style.gui_const import SIDE_MIN_WIDTH
 class Compen(QWidget):
     signal_import_tem_model = Signal(dict)
     signal_import_rpm = Signal(str)
-    signal_linear_fit = Signal()
-    signal_quadratic_fit = Signal()
+    signal_start_compen = Signal(dict)
+    signal_stop_compen = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -61,5 +61,5 @@ class Compen(QWidget):
     def connect_slots(self):
         self.import_tem_model.signal_import_tem_model.connect(self.signal_import_tem_model)
         self.import_rpm.signal_import_rpm.connect(self.signal_import_rpm)
-        self.get_para.btn_linear_fit.clicked.connect(self.signal_linear_fit)
-        self.get_para.btn_quadratic_fit.clicked.connect(self.signal_quadratic_fit)
+        self.get_para.signal_start_compen.connect(self.signal_start_compen)
+        self.get_para.signal_stop_compen.connect(self.signal_stop_compen)
