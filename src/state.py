@@ -1,7 +1,6 @@
 import os
 import csv
 import datetime
-import numpy as np
 from typing import Optional
 from collections import deque
 from src.core.nc_link import NCLink
@@ -13,7 +12,7 @@ from src.core.func import extract_numbers
 from PyQt5.QtCore import pyqtSignal as Signal, QObject, QTimer
 
 
-MAX_DATA_LEN = 3600 * 2  # 默认原始数据最大长度
+MAX_DATA_LEN = 1800  # 默认原始数据最大长度, 只显示最近半小时
 DEFAULT_SAMPLE_PATH = "./data"  # 默认采集文件夹路径
 RPM_AVG_INTER = 60  # 默认统计RPM平均值间隔(s)
 
@@ -183,9 +182,7 @@ class State(QObject):
         # 前置条件判断
         if para["tem_from"] == "采集卡":
             self.tem_from_nc = False
-            try:
-                assert self.tem_modbus_client is not None
-            except AssertionError:
+            if self.tem_modbus_client is None:
                 self.error_assert_temp_card_not_none.emit(
                     "选择从采集卡采集, 但是采集卡没有连接成功"
                 )
@@ -193,23 +190,15 @@ class State(QObject):
         else:
             self.tem_from_nc = True
             self.nc_reg_num = para["reg_num"]
-            try:
-                assert self.nc_client is not None
-            except AssertionError:
+            if self.nc_client is None:
                 self.error_assert_nc_client_not_none.emit("选择从NC采集, 但是NC没有连接成功")
                 return
         # 开始采集前根据连接的设备插入对应的空数据队列
         if self.nc_client:
-            self.orin_data["nc_reg_g"] = deque(maxlen=MAX_DATA_LEN)
-            self.orin_data["nc_axis_x"] = deque(maxlen=MAX_DATA_LEN)
-            self.orin_data["nc_axis_y"] = deque(maxlen=MAX_DATA_LEN)
-            self.orin_data["nc_axis_z"] = deque(maxlen=MAX_DATA_LEN)
-            self.orin_data["nc_chan"] = deque(maxlen=MAX_DATA_LEN)
-            self.rule_data["nc_reg_g"] = deque()
-            self.rule_data["nc_axis_x"] = deque()
-            self.rule_data["nc_axis_y"] = deque()
-            self.rule_data["nc_axis_z"] = deque()
-            self.rule_data["nc_chan"] = deque()
+            nc_keys = ["nc_reg_g", "nc_axis_x", "nc_axis_y", "nc_axis_z", "nc_chan"]
+            for key in nc_keys:
+                self.orin_data[key] = deque(maxlen=MAX_DATA_LEN)
+                self.rule_data[key] = deque()
         if self.tem_modbus_client:
             self.orin_data["card_temp"] = deque(maxlen=MAX_DATA_LEN)
             self.rule_data["card_temp"] = deque()
@@ -243,9 +232,7 @@ class State(QObject):
     def append_orin_data(self, data):
         # data: [counter, {key: value}], key: "nc_data", "card_temp", "error"
 
-        # FIXME: 没有处理可能出现采集到None或者空列表的情况
-
-        self.orin_count += 1
+        # 更新界面采集时间信息
         self.signal_update_time.emit()
         # 分类并提取数据
         err_flag = False  # 采集失败标记
@@ -271,42 +258,49 @@ class State(QObject):
                     self.orin_data["nc_axis_y"].append(self.orin_data["nc_axis_y"][-1])
                     self.orin_data["nc_axis_z"].append(self.orin_data["nc_axis_z"][-1])
                     self.orin_data["nc_chan"].append(self.orin_data["nc_chan"][-1])
+                    
+                # 统计一分钟平均转速和温度变化
+                self.save_rpm_temp_data()
             else:
+                # FIXME: 只简单处理了采集机床信息失败的情况, 但是采集卡采集到[]的情况没有处理
                 self.orin_data[key].append(extract_numbers(value))
 
         if err_flag:
             self.err_count += 1
-            self.err_idx.append(self.orin_count)  # 记录发生错误的组数
+            self.err_idx.append(self.data_collector_thread.counter)  # 记录发生错误的组数
         else:
             # 没有发生错误才保存采集的所有数据作为原始数据
+            self.orin_count += 1
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             with open(self.orin_data_filepath, "a", newline="") as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow([current_time] + extract_numbers(data[1]))
-        # 统计一分钟平均转速和温度变化
-        self.save_rpm_temp_data()
+                
+        # print(f"orin_count: {self.orin_count}")
+        # print(f"actual_count: {data[0]}")
+        # print(f"err_idx: {self.err_idx}")
+        
         # 发送显示原始数据信号
         if self.show_orin:
             self.signal_show_orin_data.emit()
 
     def save_rpm_temp_data(self) -> None:
-        if "nc_chan" in self.orin_data:
-            self.total_rpm += self.orin_data["nc_chan"][-1][2]
-            if self.orin_count % RPM_AVG_INTER == 0:
-                self.avg_rpm.append(self.total_rpm / RPM_AVG_INTER)
-                if self.tem_from_nc:
-                    temp = self.orin_data["nc_reg_g"][-1][: self.nc_reg_num]
-                elif "card_temp" in self.orin_data:
-                    temp = self.orin_data["card_temp"][-1]
-                # 更新维护最近的温升
-                self.his_rel_temp.append(
-                    [abs_temp - init for abs_temp, init in zip(temp, self.init_abs_temp)]
-                )
-                # print(self.his_rel_temp)
-                with open(self.rpm_temp_data_filepath, "a", newline="") as csvfile:
-                    writer = csv.writer(csvfile)
-                    writer.writerow(extract_numbers([self.avg_rpm[-1], temp]))
-                self.total_rpm = 0
+        self.total_rpm += self.orin_data["nc_chan"][-1][2]
+        if self.data_collector_thread.counter % RPM_AVG_INTER == 0:
+            self.avg_rpm.append(round(self.total_rpm / RPM_AVG_INTER))
+            if self.tem_from_nc:
+                temp = self.orin_data["nc_reg_g"][-1][: self.nc_reg_num]
+            elif "card_temp" in self.orin_data:
+                temp = self.orin_data["card_temp"][-1]
+            # 更新维护最近的温升
+            self.his_rel_temp.append(
+                [abs_temp - init for abs_temp, init in zip(temp, self.init_abs_temp)]
+            )
+            # print(self.his_rel_temp)
+            with open(self.rpm_temp_data_filepath, "a", newline="") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(extract_numbers([self.avg_rpm[-1], temp]))
+            self.total_rpm = 0
 
     def append_rule_data(self) -> None:
         """
@@ -724,6 +718,7 @@ class State(QObject):
         if end_idx <= len(self.sampled_rpm):
             rpm_tensor = torch.tensor(self.sampled_rpm[start_idx:end_idx], dtype=torch.float32).unsqueeze(0)
         else:
+            print("未来平均转速数据不足, 不再更新参数")
             return
         print(f"rpm_tensor.shape: {rpm_tensor.shape}")
         # 预测温度

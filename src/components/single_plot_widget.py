@@ -67,6 +67,8 @@ class SinglePlotWidget(QWidget):
         self.update_canvas()
 
     def plot_sample_data(self, data, from_nc):
+        # FIXME: 当数据长度超过最大长度后，坐标轴应该会偏移
+        # TODO: 输入加上发生错误的索引，提示用户该段数据采集错误
         self.ax_tem.clear()
         self.ax_err.clear()
         if from_nc and "nc_reg_g" in data and len(data["nc_reg_g"]) > 0:

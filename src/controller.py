@@ -165,7 +165,7 @@ class Controller:
         )
 
     def on_update_time(self):
-        h, m, s = self.convert_seconds(self.state.orin_count)
+        h, m, s = self.convert_seconds(self.state.data_collector_thread.counter)
         self.view.show_message(
             f"原始数据: {self.state.orin_count}组; 规则数据: {self.state.rule_count}组; 错误数据: {self.state.err_count}组; 采集时长: {h}时{m}分{s}秒",
             1000,

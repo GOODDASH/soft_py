@@ -4,6 +4,8 @@ from src.controller import Controller
 
 
 # TODO: 样式变量, 将qss文件中的值设为变量
+# TODO: 替换QMessageBox为自定义浮窗
+# TODO: 启动的时候自动后台导入pytorch
 
 if __name__ == "__main__":
     # from PyQt5.QtCore import Qt

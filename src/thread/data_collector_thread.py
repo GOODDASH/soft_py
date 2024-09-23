@@ -21,6 +21,11 @@ class DataCollectorThread(QThread):
         self.nc_client = nc_client
         self.tem_modbus_client = tem_modbus_client
         self.serial_port_client = serial_port_client
+        
+        # 根据传入的客户端是否为None作为是否采集该数据的开关
+        self.collect_nc_data_flag = False if self.nc_client is None else True
+        self.collect_reg_data_flag = False if self.tem_modbus_client is None else True
+        self.collect_serial_data_flag = False if self.serial_port_client is None else True
 
         self.counter = 0
         self.once_rec_date = dict()
@@ -62,15 +67,15 @@ class DataCollectorThread(QThread):
     def get_all_data(self):
         # 采集所有连接成功的设备的数据
         self.counter += 1
-        if self.nc_client:
+        if self.collect_nc_data_flag:
             rec_nc_data = self.nc_client.query(self.query)
             # 采集失败返回None
             self.once_rec_date["nc_data"] = rec_nc_data
-        if self.tem_modbus_client:
+        if self.collect_reg_data_flag:
             rec_temp = self.tem_modbus_client.read_temperature()
             # 采集失败返回[]
             self.once_rec_date["card_temp"] = rec_temp
-        if self.serial_port_client:
+        if self.collect_serial_data_flag:
             indict = self.serial_port_client.read()
             self.once_rec_date["error"] = indict
         # 如果这次满足规则采样要求

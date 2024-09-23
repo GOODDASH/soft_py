@@ -29,7 +29,7 @@ class CompenImportRpm(QGroupBox):
         self.btn_import_rpm.clicked.connect(self.on_btn_import_rpm)
 
         self.vLayout = QVBoxLayout(self)
-        self.vLayout.addWidget(self.btn_import_rpm)
+        self.vLayout.addWidget(self.btn_import_rpm, 0, Qt.AlignHCenter)
 
         # 初始化表格属性为 None
         self.table = None
