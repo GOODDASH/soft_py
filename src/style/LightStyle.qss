@@ -12,7 +12,7 @@ QWidget#statusBar {
 QPushButton#btn_add_card {
     border: 1px solid rgb(144, 164, 174);
     padding: 0px;
-    border-radius: 19px;
+    border-radius: 17px;
 }
 
 QPushButton#btn_add_card:hover {
