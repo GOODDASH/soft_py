@@ -24,7 +24,8 @@ class CompenImportRpm(QGroupBox):
         super().__init__(parent)
         self.setTitle("导入工况")
 
-        self.btn_import_rpm = QPushButton("导入平均转速文件")
+        self.btn_import_rpm = QPushButton("导入工况数据")
+        self.btn_import_rpm.setFixedWidth(200)
         self.btn_import_rpm.clicked.connect(self.on_btn_import_rpm)
 
         self.vLayout = QVBoxLayout(self)

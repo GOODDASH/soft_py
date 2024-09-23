@@ -234,5 +234,4 @@ QTableWidget::item:selected {
 
 QTableWidget {
     background-color: rgb(236, 239, 241)
-    gridline-color: rgb(96, 125, 139); 
 }

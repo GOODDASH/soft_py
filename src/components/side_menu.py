@@ -22,9 +22,9 @@ class SideMenu(QWidget):
         self.btns_layout.setSpacing(10)
         self.btns_layout.setContentsMargins(10, 10, 0, 0)
         self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/connect.png")), "采集数据")
-        self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/points.png")), "分析数据")
+        self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/analyze.png")), "分析数据")
         self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/nn.png")), "训练模型")
-        self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/compen.png")), "代理补偿")
+        self.add_btn_tip(CustomBtn("menu", QIcon("src/icons/compen.png")), "误差补偿")
 
     # 添加按钮和按钮提示
     def add_btn_tip(self, btn: CustomBtn, btn_str: str):
