@@ -61,6 +61,7 @@ class Controller:
         self.view.signal_plot_files.connect(self.on_plot_files)
         self.view.signal_tra_tsp.connect(self.on_tra_tsp)
         self.view.signal_ga_tsp.connect(self.on_ga_tsp)
+        self.state.signal_ga_tsp_done.connect(self.on_ga_tsp_done)
         self.view.signal_saved_data_path.connect(self.on_saved_data)
         self.view.signal_mlr_fit.connect(self.on_mlr_fit)
         self.view.signal_send_coef.connect(self.on_send_coef)
@@ -243,12 +244,12 @@ class Controller:
             return
 
         self.view.setCursor(Qt.CursorShape.BusyCursor)  # 耗时较长, 鼠标样式设为等待
-        start_time = time.time()
+        self.view.show_message("正在进行迭代测点筛选...", 5000)
         self.state.get_cluster_res(method_name=para[1], tsp_num=para[0])
         self.state.get_ga_tsp_res(pop_size=para[2], iters=para[3])
-        end_time = time.time()
-        cos_time = end_time - start_time
-        self.view.show_message(f"耗时:{cos_time:.2f}s, 迭代测点筛选完成 {self.state.tsp_res}", 5000)
+    
+    def on_ga_tsp_done(self):
+        self.view.show_message(f"迭代测点筛选完成 {self.state.tsp_res}", 5000)
         self.view.tsp_page.tsp_res.edit_tsp.setText(",".join(map(str, self.state.tsp_res)))
         self.view.setCursor(Qt.CursorShape.ArrowCursor)  # 恢复鼠标样式
 

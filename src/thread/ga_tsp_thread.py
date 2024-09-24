@@ -2,7 +2,7 @@ from PyQt5.QtCore import QThread, pyqtSignal as Signal
 
 
 class GATSPThread(QThread):
-    signal_tsp_result = Signal(any)
+    signal_tsp_result = Signal(object)
 
     def __init__(self, loss, num_sensors, pop_size, iters, cluster_res):
         super().__init__()

@@ -32,6 +32,8 @@ class State(QObject):
     signal_update_time = Signal()
     signal_show_sample_data = Signal()
 
+    signal_ga_tsp_done = Signal()
+
     signal_get_datasets = Signal()
     signal_start_train = Signal()
     signal_train_val_loss = Signal(tuple)
@@ -82,6 +84,8 @@ class State(QObject):
         self.data = None
         # 聚类结果
         self.cluster_res = None
+        # 迭代筛选线程
+        self.tsp_thread = None
         # 测点筛选结果
         self.tsp_res = None
         # 存储不同模型是否需要重新创建数据集的布尔值字典
@@ -397,8 +401,8 @@ class State(QObject):
         - iters: 迭代次数
         """
         from functools import partial
-        from src.core.ga import GA
         from src.core.func import get_kfold_cv, loss_func
+        from src.thread.ga_tsp_thread import GATSPThread
 
         cv = get_kfold_cv(5, self.data.Tdata)
         # 设置的损失函数
@@ -409,9 +413,17 @@ class State(QObject):
             idx=self.cluster_res,
             cv=cv,
         )
-        optimizer = GA(loss, self.data.Tdata.shape[1], pop_size, iters, self.cluster_res)
 
-        self.tsp_res = optimizer.opt()
+        self.tsp_thread = GATSPThread(loss, self.data.Tdata.shape[1], pop_size, iters, self.cluster_res)
+        self.tsp_thread.signal_tsp_result.connect(self.ga_tsp_done)
+        self.tsp_thread.start()
+
+    def ga_tsp_done(self, tsp_res):
+        """
+        将约束遗传算法求解的温度敏感点传递给主界面
+        """
+        self.tsp_res = tsp_res
+        self.signal_ga_tsp_done.emit()
 
     def check_edited_tsp_text(self, tsp_res_text):
         is_valid, error_message = self.validate_tsp_input(tsp_res_text)
