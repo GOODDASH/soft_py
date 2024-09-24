@@ -1,23 +1,37 @@
-from matplotlib import pyplot as plt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from PyQt5.QtCore import Qt
 
-from src.view import View
-from src.state import State
+
+from matplotlib import pyplot as plt
 
 fontname = "Sarasa UI SC"
 plt.rcParams["font.sans-serif"] = [fontname]
 plt.rcParams["font.size"] = 12
 plt.rcParams["axes.unicode_minus"] = False
 
+from src.view import View
+from src.state import State
+
 
 class Controller:
     def __init__(self):
-        self.state = State()
+        # 优化启动时间，窗口显示后再执行对应的一些初始化操作
         self.view = View()
-        self.connect_slots()
-        self.view.vis_config(self.state.ui_para.data)
+        self.view.signal_window_show.connect(self.init_state)
         self.view.show()
+        self.view.show_message("正在加载模组...")
+
+    def init_state(self):
+        # 初始化状态、连接信号槽函数
+        self.state = State()
+        self.state.signal_module_loaded.connect(self.on_torch_loaded)
+        self.state.load_torch()
+        self.view.vis_config(self.state.ui_para.data)
+        self.view.connect_slots()
+        self.connect_slots()
+
+    def on_torch_loaded(self):
+        self.view.show_message("模组加载完成", 1000)
 
     def connect_slots(self):
         self.view.signal_close_window.connect(self.on_close_window)
@@ -35,6 +49,9 @@ class Controller:
         self.view.signal_stop_sample.connect(self.on_stop_sample)
         self.state.error_assert_nc_client_not_none.connect(self.on_error_nc_client_none)
         self.state.error_assert_temp_card_not_none.connect(self.on_error_temp_card_none)
+        self.state.error_assert_serial_port_client_not_none.connect(
+            self.on_error_serial_port_client_none
+        )
         self.state.signal_start_sample_success.connect(self.on_set_stop_sample_btn)
         self.state.signal_show_orin_data.connect(self.on_show_orin_data)
         self.state.signal_update_time.connect(self.on_update_time)
@@ -125,11 +142,14 @@ class Controller:
     def on_sample_save_path(self, para):
         self.state.set_sample_save_path(para)
 
-    def on_error_nc_client_none(self):
-        QMessageBox.critical(self.view, "错误", "选择从机床采集温度但未连接NC卡")
+    def on_error_nc_client_none(self, str):
+        QMessageBox.critical(self.view, "错误", str)
 
-    def on_error_temp_card_none(self):
-        QMessageBox.critical(self.view, "错误", "选择从采集卡采集温度但未连接采集卡")
+    def on_error_temp_card_none(self, str):
+        QMessageBox.critical(self.view, "错误", str)
+
+    def on_error_serial_port_client_none(self, str):
+        QMessageBox.critical(self.view, "错误", str)
 
     def on_start_sample(self, para):
         self.view.show_message("开始采集数据", 3000)
@@ -328,6 +348,7 @@ class Controller:
 
     def on_start_compen(self, para):
         # para["degree", "interval"]
+        self.view.sample_page.sample_rule_widget.btn_start_sample.click()
         self.state.start_compen(para)
 
     def on_ui_show_fit_coef(self, para):
@@ -336,4 +357,3 @@ class Controller:
 
     def on_stop_compen(self):
         self.state.stop_compen()
-

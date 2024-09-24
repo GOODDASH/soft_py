@@ -22,6 +22,8 @@ from src.components import SideMenu
 
 
 class View(QMainWindow):
+    signal_window_show = Signal()
+
     signal_connect_nc = Signal(list)
     signal_disconnect_nc = Signal()
     signal_connect_tem_card = Signal(list)
@@ -60,10 +62,11 @@ class View(QMainWindow):
         super().__init__()
         # 当前页面索引
         self.cur_page = 0
-        self.scale_factor = 1.0
-
         self.setup_ui()
-        self.connect_slots()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.signal_window_show.emit()
 
     def setup_ui(self):
         import matplotlib.pyplot as plt

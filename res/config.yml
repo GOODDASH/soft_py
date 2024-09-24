@@ -34,4 +34,4 @@ milestones: 10,40
 mile_gamma: 0.9
 T_max: 100
 
-tsp_res: 17,6,5,14,19,0
+tsp_res: 2,6,9,12,18,19

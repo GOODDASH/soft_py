@@ -7,8 +7,8 @@ from src.core.nc_link import NCLink
 from src.core.modbus_tcp import ModbusTCP
 from src.core.yaml_handler import YamlHandler
 from src.core.serial_port_reader import SerialPortReader
+from src.thread.load_module_thread import ModuleLoaderThread
 from src.thread.data_collector_thread import DataCollectorThread
-from src.core.func import extract_numbers
 from PyQt5.QtCore import pyqtSignal as Signal, QObject, QTimer
 
 
@@ -18,12 +18,15 @@ RPM_AVG_INTER = 60  # 默认统计RPM平均值间隔(s)
 
 
 class State(QObject):
+    signal_module_loaded = Signal()
+
     signal_connect_nc_status = Signal(list)
     signal_connect_tem_card_status = Signal(list)
     signal_open_port_status = Signal(bool)
 
     error_assert_temp_card_not_none = Signal(str)
     error_assert_nc_client_not_none = Signal(str)
+    error_assert_serial_port_client_not_none = Signal(str)
     signal_start_sample_success = Signal()
     signal_show_orin_data = Signal()
     signal_update_time = Signal()
@@ -43,37 +46,37 @@ class State(QObject):
         self.serial_port_client: Optional[SerialPortReader] = None
 
         # 采集文件夹路径
-        self.sample_path = None  
+        self.sample_path = None
         # 采集线程
-        self.data_collector_thread: Optional[DataCollectorThread] = None  
+        self.data_collector_thread: Optional[DataCollectorThread] = None
         # 采集的原始数据
-        self.orin_data = dict() 
-        # 采集的规则数据 
-        self.rule_data = dict()  
+        self.orin_data = dict()
+        # 采集的规则数据
+        self.rule_data = dict()
         # 采集原始数据计数
-        self.orin_count = 0  
+        self.orin_count = 0
         # 采集规则数据计数
-        self.rule_count = 0  
+        self.rule_count = 0
         # 采集错误数据计数
-        self.err_count = 0  
+        self.err_count = 0
         # 采集错误数据索引
-        self.err_idx = []  
+        self.err_idx = []
         # 采集原始数据保存路径
-        self.orin_data_filepath = None  
+        self.orin_data_filepath = None
         # 采集规则数据保存路径
-        self.rule_data_filepath = None  
+        self.rule_data_filepath = None
         # 采集温升数据保存路径
-        self.rpm_temp_data_filepath = None 
-        # 采集的平均转速 
-        self.avg_rpm = []  
+        self.rpm_temp_data_filepath = None
+        # 采集的平均转速
+        self.avg_rpm = []
         # 一分钟内统计的60秒总转速
-        self.total_rpm = 0  
+        self.total_rpm = 0
         # 是否显示原始采集数据
-        self.show_orin = True  
+        self.show_orin = True
         # 是否从NC采集温度
-        self.tem_from_nc = True  
+        self.tem_from_nc = True
         # 从NC采集温升的寄存器个数
-        self.nc_reg_num = None  
+        self.nc_reg_num = None
 
         # 导入的数据
         self.data = None
@@ -98,19 +101,19 @@ class State(QObject):
         # 温度预测模型
         self.tem_model = None
         # 记录第一次获取到的绝对温度
-        self.init_abs_temp = None  
+        self.init_abs_temp = None
         # 记录最近三分钟温升(相对温度)
         self.his_rel_temp = deque(
             [[0 for _ in range(6)], [0 for _ in range(6)], [0 for _ in range(6)]], maxlen=3
-        )  
+        )
         # 温度模型预测的温升
-        self.pred_temp_numpy = None  
+        self.pred_temp_numpy = None
         # 热误差模型预测的热误差
-        self.pred_err_numpy = None  
+        self.pred_err_numpy = None
         # 平均转速数组
-        self.sampled_rpm = None  
+        self.sampled_rpm = None
         # 代理模型拟合的参数
-        self.coef_fit = None  
+        self.coef_fit = None
         # 代理补偿定时器
         self.compen_timer = QTimer()
         # 更新间隔
@@ -122,6 +125,11 @@ class State(QObject):
         self.ui_para = YamlHandler("res/config.yml")
         self.ui_para.read()
 
+    def load_torch(self):
+        self.loader_thread = ModuleLoaderThread()
+        self.loader_thread.module_loaded.connect(self.signal_module_loaded)
+        self.loader_thread.start()
+
     def on_close_window(self, config):
         self.ui_para.data = config
         self.ui_para.write()
@@ -129,7 +137,6 @@ class State(QObject):
         self.disconnect_tem_card()
         self.close_port()
         self.stop_compen()
-        
 
     def connect_nc(self, para):
         from src.core.nc_link import NCLink
@@ -184,14 +191,28 @@ class State(QObject):
             self.tem_from_nc = False
             if self.tem_modbus_client is None:
                 self.error_assert_temp_card_not_none.emit(
-                    "选择从采集卡采集, 但是采集卡没有连接成功"
+                    "选择从采集卡采集温度, 但是采集卡没有连接成功"
                 )
                 return
         else:
             self.tem_from_nc = True
             self.nc_reg_num = para["reg_num"]
             if self.nc_client is None:
-                self.error_assert_nc_client_not_none.emit("选择从NC采集, 但是NC没有连接成功")
+                self.error_assert_nc_client_not_none.emit("选择从NC采集温度, 但是NC没有连接成功")
+                return
+        # 如果选择量表采集，判断是否连接量表
+        if para["type"] == "量表停留":
+            if self.serial_port_client is None:
+                self.error_assert_serial_port_client_not_none.emit(
+                    "采样规则选择量表停留采集, 但是量表没有打开"
+                )
+                return
+        # 如果选择坐标停留，判断是否连接机床
+        if para["type"] == "坐标停留":
+            if self.nc_client is None:
+                self.error_assert_nc_client_not_none.emit(
+                    "采样规则选择坐标停留采集, 但是机床没有连接成功"
+                )
                 return
         # 开始采集前根据连接的设备插入对应的空数据队列
         if self.nc_client:
@@ -230,6 +251,8 @@ class State(QObject):
         self.data_collector_thread.stop()
 
     def append_orin_data(self, data):
+        from src.core.func import extract_numbers
+
         # data: [counter, {key: value}], key: "nc_data", "card_temp", "error"
 
         # 更新界面采集时间信息
@@ -253,12 +276,14 @@ class State(QObject):
                 else:
                     # 采集失败则自动复制最后一次的数据
                     err_flag = True
-                    self.orin_data["nc_reg_g"].append(self.orin_data["nc_reg_g"][-1])
-                    self.orin_data["nc_axis_x"].append(self.orin_data["nc_axis_x"][-1])
-                    self.orin_data["nc_axis_y"].append(self.orin_data["nc_axis_y"][-1])
-                    self.orin_data["nc_axis_z"].append(self.orin_data["nc_axis_z"][-1])
+                    # 这里还要判断失败之前是否成功采集过数据
+                    if self.orin_data["nc_reg_g"]:
+                        self.orin_data["nc_reg_g"].append(self.orin_data["nc_reg_g"][-1])
+                        self.orin_data["nc_axis_x"].append(self.orin_data["nc_axis_x"][-1])
+                        self.orin_data["nc_axis_y"].append(self.orin_data["nc_axis_y"][-1])
+                        self.orin_data["nc_axis_z"].append(self.orin_data["nc_axis_z"][-1])
                     self.orin_data["nc_chan"].append(self.orin_data["nc_chan"][-1])
-                    
+
                 # 统计一分钟平均转速和温度变化
                 self.save_rpm_temp_data()
             else:
@@ -275,16 +300,18 @@ class State(QObject):
             with open(self.orin_data_filepath, "a", newline="") as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow([current_time] + extract_numbers(data[1]))
-                
+
         # print(f"orin_count: {self.orin_count}")
         # print(f"actual_count: {data[0]}")
         # print(f"err_idx: {self.err_idx}")
-        
+
         # 发送显示原始数据信号
         if self.show_orin:
             self.signal_show_orin_data.emit()
 
     def save_rpm_temp_data(self) -> None:
+        from src.core.func import extract_numbers
+
         self.total_rpm += self.orin_data["nc_chan"][-1][2]
         if self.data_collector_thread.counter % RPM_AVG_INTER == 0:
             self.avg_rpm.append(round(self.total_rpm / RPM_AVG_INTER))
@@ -303,6 +330,8 @@ class State(QObject):
             self.total_rpm = 0
 
     def append_rule_data(self) -> None:
+        from src.core.func import extract_numbers
+
         """
         插入规则数据, 写入CSV文件, 只会写入选择的温度来源数据
         """
@@ -689,7 +718,7 @@ class State(QObject):
         # 在创建定时器时就执行一次, 不然要等一段时间才能开始补偿
         self.cal_para(para["degree"])
         self.compen_timer.timeout.connect(lambda: self.cal_para(para["degree"]))
-        self.compen_timer.start(para["interval"]*60_000)
+        self.compen_timer.start(para["interval"] * 60_000)
 
     def stop_compen(self) -> None:
         """
@@ -710,13 +739,15 @@ class State(QObject):
 
         # 历史温度变化趋势转换为tensor
         his_tem_tensor = torch.tensor(self.his_rel_temp, dtype=torch.float32).unsqueeze(0)
-        print(f"his_tem_tensor.shape: {his_tem_tensor.shape}")
+        print(f"his_tem_tensor: \n {his_tem_tensor}")
         # 未来平均转速转换为tensor
         start_idx = self.compen_count * self.compen_interval
         end_idx = (self.compen_count + 1) * self.compen_interval
         print(f"start_idx: {start_idx}, end_idx: {end_idx}")
         if end_idx <= len(self.sampled_rpm):
-            rpm_tensor = torch.tensor(self.sampled_rpm[start_idx:end_idx], dtype=torch.float32).unsqueeze(0)
+            rpm_tensor = torch.tensor(
+                self.sampled_rpm[start_idx:end_idx], dtype=torch.float32
+            ).unsqueeze(0)
         else:
             print("未来平均转速数据不足, 不再更新参数")
             return
@@ -741,7 +772,7 @@ class State(QObject):
         else:
             # 未知模型类型
             return
-        
+
         print(f"pred_err.shape: {pred_err.shape}")
 
         # 去除多余维度并转换为numpy数组
@@ -758,6 +789,6 @@ class State(QObject):
         self.compen_count += 1
 
         self.coef_fit = fit_model.get_coefficients()
-        print(self.coef_fit.shape)
+        print(f"self.coef_fit.shape: {self.coef_fit.shape}")
 
         self.signal_fit_coef.emit([degree, self.coef_fit])

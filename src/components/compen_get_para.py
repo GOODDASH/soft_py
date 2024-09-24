@@ -58,7 +58,7 @@ class CompenGetPara(QGroupBox):
         degree = 1 if self.combo_fit_degree.currentText() == "一阶拟合" else 2
         interval = int(self.edit_fit_inter.text())
         self.signal_start_compen.emit({"degree": degree, "interval": interval})
-    
+
     def on_stop_compen(self):
         self.btn_start_compen.clicked.disconnect()
         self.btn_start_compen.setText("开始补偿")

@@ -21,7 +21,7 @@ class DataCollectorThread(QThread):
         self.nc_client = nc_client
         self.tem_modbus_client = tem_modbus_client
         self.serial_port_client = serial_port_client
-        
+
         # 根据传入的客户端是否为None作为是否采集该数据的开关
         self.collect_nc_data_flag = False if self.nc_client is None else True
         self.collect_reg_data_flag = False if self.tem_modbus_client is None else True
