@@ -21,7 +21,8 @@ class MyData:
         for file_path in para[0]:
             from src.core.file2numpy import read_datafile_to_numpy
 
-            array = read_datafile_to_numpy(
+            try:
+                array = read_datafile_to_numpy(
                 file_path,
                 trans=flag_transpose,
                 sep=self.sep,
@@ -29,7 +30,9 @@ class MyData:
                 t_end=para[4],
                 e_idx=para[5],
             )
-            array = array - array[0, :]  # 减去第一行
+            except Exception as e:
+                return f"读取文件{file_path}时出错：{e}"
+            array = array - array[0, :]  # 减去第一行，换算成温升和热伸长
             self.data_arrays.append(array)
         self.data_cat = vstack(self.data_arrays)
         # 提取温度、热误差数据

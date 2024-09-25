@@ -1,3 +1,4 @@
+import re
 import serial
 import threading
 import time
@@ -26,10 +27,11 @@ class SerialPortReader:
         try:
             while self.running:
                 if self.ser.in_waiting:
-                    data_str = self.ser.read(self.ser.in_waiting).decode("utf-8")
+                    data_str = self.ser.read(self.ser.in_waiting).decode("utf-8").strip()
+                    # print(data_str)  # "1 MW +011.0105 mm"
+                    match = re.search(r'([+|-]\d+\.\d+)', data_str)
                     try:
-                        # 尝试将接收到的字符串转换为float
-                        self.latest_data = float(data_str)
+                        self.latest_data = float(match.group())
                     except ValueError:
                         # 如果转换失败（例如，接收到的数据不是合法的浮点数字符串），打印错误并忽略此次数据
                         warning(f"无法将接收到的数据转换为float: '{data_str}'")
@@ -57,8 +59,8 @@ if __name__ == "__main__":
         try:
             while True:
                 data = port_reader.read()
-                print("收到数据:", data)
-                time.sleep(0.5)
+                print(f"收到数据:{data:.4f}")
+                time.sleep(1)
         finally:
             port_reader.stop()
     except serial.SerialException as e:

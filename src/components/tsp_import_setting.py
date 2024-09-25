@@ -92,7 +92,6 @@ class TspImportSetting(QGroupBox):
                 int(self.edit_tem_index_end.text()),
                 int(self.edit_error_index.text()),
             ]
-            self.btn_plot_file.setEnabled(True)
             self.signal_import_data.emit(para)
 
     def show_data(self, data):

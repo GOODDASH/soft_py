@@ -3,6 +3,7 @@ from .custom_btn import CustomBtn
 from .combo_options import ComboOptions
 from .single_plot_widget import SinglePlotWidget
 from .multi_plot_widget import MultiPlotWidget
+from .pop_up import PopUp
 
 # 侧边栏
 from .side_menu import SideMenu
@@ -49,4 +50,5 @@ __all__ = [
     "CompenTemModel",
     "CompenImportRpm",
     "CompenGetPara",
+    "PopUp",
 ]

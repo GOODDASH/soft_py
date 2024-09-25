@@ -25,6 +25,7 @@ class TspRes(QGroupBox):
 
         # 存储多元线性回归拟合结果
         self.edit_mlr_paras = []
+        
 
         self.vLayout = QVBoxLayout(self)
         self.vLayout.setSpacing(10)
@@ -110,7 +111,7 @@ class TspRes(QGroupBox):
         label_inter.setEnabled(False)
 
         formlayout.addRow("RMSE: ", label_rmse)
-        formlayout.addRow("常量: ", label_inter)
+        formlayout.addRow("拟合常量: ", label_inter)
 
         self.edit_mlr_paras.append(label_inter)
 
@@ -119,7 +120,14 @@ class TspRes(QGroupBox):
             label.setFixedWidth(120)
             label.setEnabled(False)
             self.edit_mlr_paras.append(label)
-            formlayout.addRow(f"系数{i+1}: ", label)
+            formlayout.addRow(f"拟合系数{i+1}: ", label)
+            
+        # 设置参数表起始位置
+        self.edit_para_start_idx = QLineEdit("700000")
+        self.edit_para_start_idx.setEnabled(False)
+        self.edit_para_start_idx.setFixedWidth(120)
+        self.edit_para_start_idx.setValidator(QIntValidator())
+        formlayout.addRow("参数表起始: ", self.edit_para_start_idx)
 
         self.fit_res_layout.addWidget(widget, 0, Qt.AlignHCenter)
 
@@ -127,6 +135,8 @@ class TspRes(QGroupBox):
         if self.edit_mlr_paras:
             for line_edit in self.edit_mlr_paras:
                 line_edit.setEnabled(flag)
+        if self.edit_para_start_idx:
+            self.edit_para_start_idx.setEnabled(flag)
 
     def change_negative(self, flag):
         if self.edit_mlr_paras:
@@ -138,4 +148,5 @@ class TspRes(QGroupBox):
         res = []
         for line_edit in self.edit_mlr_paras:
             res.append(float(line_edit.text()))
+        res.append(int(self.edit_para_start_idx.text()))
         return res

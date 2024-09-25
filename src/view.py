@@ -18,7 +18,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtGui import QKeySequence
 
 from src.pages import Sample, Tsp, Model, Compen
-from src.components import SideMenu
+from src.components import SideMenu, PopUp
 
 
 class View(QMainWindow):
@@ -63,10 +63,6 @@ class View(QMainWindow):
         # 当前页面索引
         self.cur_page = 0
         self.setup_ui()
-
-    def showEvent(self, event):
-        super().showEvent(event)
-        self.signal_window_show.emit()
 
     def setup_ui(self):
         import matplotlib.pyplot as plt
@@ -191,13 +187,25 @@ class View(QMainWindow):
         config = self.model_page.update_config(config)
         return config
 
-    def show_message(self, message, timeout=0):
+    def show_status_message(self, message, timeout=0):
         self.statusBar().show()
         self.info_label.setText(message)
 
         # 如果设置了超时时间，启动定时器
         if timeout > 0:
             self.timer.start(timeout)
+
+    def show_pop_message(self, message, timeout=None):
+        self.popup = PopUp(message, timeout, self)
+
+        # 移动弹窗到主窗口中心
+        self.popup.setGeometry(
+            self.geometry().center().x() - self.popup.width() // 2,
+            self.geometry().center().y() - self.popup.height() // 2,
+            self.popup.width(),
+            self.popup.height(),
+        )
+        self.popup.show()
 
     def clear_message(self):
         """清除居中的消息."""

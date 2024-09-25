@@ -92,6 +92,7 @@ class DataCollectorThread(QThread):
         elif self.para["type"] == "坐标停留" and self.once_rec_date["nc_data"]:
             # NClink读取的坐标值精度比系统显示精度多一位, 这里设定一个小范围
             val = self.once_rec_date["nc_data"][self.axis_index][self.coordinate_index]
+            # print(val)
             save_flag = self.check_range_repeat(val, 0.0001)
         elif self.para["type"] == "量表停留":
             val = self.once_rec_date["error"]
@@ -116,11 +117,12 @@ class DataCollectorThread(QThread):
 
     @staticmethod
     def get_query() -> list:
+        # 每个轴采集
         items = [
             "REG_G:3080-3100",
-            "AXIS_0:38,41,43,49,53",
-            "AXIS_1:38,41,43,49,53",
-            "AXIS_2:38,41,43,49,53",
+            "AXIS_0:40,41,43,49,53",  
+            "AXIS_1:40,41,43,49,53",
+            "AXIS_2:40,41,43,49,53",
             "CHAN_0:27,32,47",
         ]
         return items

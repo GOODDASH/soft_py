@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import (
     QSplitter,
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import pyqtSignal as Signal
 
 from src.components import TspImportSetting, TspConfig, TspRes, MultiPlotWidget
 from src.style.gui_const import SIDE_MIN_WIDTH

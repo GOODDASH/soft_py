@@ -188,8 +188,12 @@ class NCLink:
             id_ = self.id_name_hash.get(parts[0])
             if id_ is None:
                 return "未找到对应id, 请检查"
+            
+            try:
+                index = int(parts[1])
+            except ValueError:
+                return "index输入了不能转换为整数的字符"
 
-            index = parts[1]
             try:
                 value = int(parts[2])
             except ValueError:
@@ -206,6 +210,7 @@ class NCLink:
     def set(self, items, need_parse=True):
         if need_parse == True:
             req_items = self.parse_set_requests(items)
+            print(req_items)
         else:
             req_items = items
         data, success = self.send_request(
@@ -275,21 +280,47 @@ class NCLink:
 if __name__ == "__main__":
     import time
 
-    broker_ip = "localhost"
+    broker_ip = "127.0.0.1"
     SN = "1D80F5FB02C08F4"
     port = 1883
     nc_client = NCLink(mqtt_ip=broker_ip, mqtt_port=port, sn=SN, client_id="LUCKDASH")
     nc_client.connect()
-    while True:
-        nc_rev = nc_client.query(
-            items=[
-                "REG_G:3080-3100",
-                "AXIS_0:38,41,43,49,53",
-                "AXIS_1:38,41,43,49,53",
-                "AXIS_2:38,41,43,49,53",
-                "CHAN_0:27,32,47",
-            ],
-            timeout=2000,
-        )
-        print(nc_rev)
-        time.sleep(2)
+    
+    # items = {
+    #         "values": [
+    #             {
+    #             "id": "01035437",
+    #             "params": {
+    #                 "index": 200,
+    #                 "value": 1,
+    #                 }
+    #             },
+    #             {
+    #             "id": "01035437",
+    #             "params": {
+    #                 "index": 201,
+    #                 "value": 2,
+    #                 }
+    #             },
+    #             ]
+    #         }
+    
+
+    # TODO: 测试设值
+    nc_rev = nc_client.set(
+        ["REG_B:200:1", "REG_B:201:2"]
+    )
+    print(nc_rev)
+
+    # 测试读值
+    # while True:
+    #     nc_rev = nc_client.query(
+    #         items=[
+    #             "AXIS_2:0-50",
+    #         ],
+    #         timeout=2000,
+    #     )
+    #     print(nc_rev)
+    #     time.sleep(2)
+        
+        

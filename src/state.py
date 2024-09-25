@@ -13,7 +13,7 @@ from PyQt5.QtCore import pyqtSignal as Signal, QObject, QTimer
 
 
 MAX_DATA_LEN = 1800  # 默认原始数据最大长度, 只显示最近半小时
-DEFAULT_SAMPLE_PATH = "./data"  # 默认采集文件夹路径
+DEFAULT_SAMPLE_PATH = "./data/collected"  # 默认采集文件夹路径
 RPM_AVG_INTER = 60  # 默认统计RPM平均值间隔(s)
 
 
@@ -26,7 +26,7 @@ class State(QObject):
 
     error_assert_temp_card_not_none = Signal(str)
     error_assert_nc_client_not_none = Signal(str)
-    error_assert_serial_port_client_not_none = Signal(str)
+    error_assert_serial_port_not_none = Signal(str)
     signal_start_sample_success = Signal()
     signal_show_orin_data = Signal()
     signal_update_time = Signal()
@@ -40,6 +40,7 @@ class State(QObject):
     signal_train_finished = Signal(tuple)
 
     signal_fit_coef = Signal(list)
+    signal_rpm_len_lack = Signal(int)
 
     def __init__(self):
         super().__init__()
@@ -207,7 +208,7 @@ class State(QObject):
         # 如果选择量表采集，判断是否连接量表
         if para["type"] == "量表停留":
             if self.serial_port_client is None:
-                self.error_assert_serial_port_client_not_none.emit(
+                self.error_assert_serial_port_not_none.emit(
                     "采样规则选择量表停留采集, 但是量表没有打开"
                 )
                 return
@@ -286,7 +287,7 @@ class State(QObject):
                         self.orin_data["nc_axis_x"].append(self.orin_data["nc_axis_x"][-1])
                         self.orin_data["nc_axis_y"].append(self.orin_data["nc_axis_y"][-1])
                         self.orin_data["nc_axis_z"].append(self.orin_data["nc_axis_z"][-1])
-                    self.orin_data["nc_chan"].append(self.orin_data["nc_chan"][-1])
+                        self.orin_data["nc_chan"].append(self.orin_data["nc_chan"][-1])
 
                 # 统计一分钟平均转速和温度变化
                 self.save_rpm_temp_data()
@@ -355,20 +356,42 @@ class State(QObject):
         if not self.show_orin:
             self.signal_show_sample_data.emit()
 
-    def get_data(self, para):
+    def get_data(self, para: list) -> bool:
+        """
+        导入数据
+        -----
+        paras:
+        - para[0]: 路径列表
+        - para[1]: 按行\列读取
+        - para[2]: 分隔符号
+        - para[3]: 温度起始列序号
+        - para[4]: 温度结束列序号
+        - para[5]: 热伸长量列序号
+        -----
+        return:
+        - 是否导入成功
+        """
         from src.core.my_data import MyData
 
-        self.data = MyData(para)
+        try:
+            self.data = MyData(para)
+        except Exception as e:
+            return False
         # 只要导入新数据, 里面所有类型的模型训练都需要重新创建数据集
         if self.flag_need_create_new_datasets:
             for key in self.flag_need_create_new_datasets.keys():
                 self.flag_need_create_new_datasets[key] = True
+        return True
 
-    def get_cluster_res(self, method_name: str, tsp_num: int) -> None:
+    def get_cluster_res(self, cluster_method: str, tsp_num: int) -> None:
         """
         根据聚类方法和聚类数量获取聚类结果
+        -----
+        paras:
+        - cluster_method: 聚类方法
+        - tsp_num: 聚类数量
         """
-        match method_name:
+        match cluster_method:
             case "FCM算法":
                 from src.core.func import get_fcm_cluster_res
 
@@ -381,6 +404,9 @@ class State(QObject):
     def get_tra_tsp_res(self, method_name: str) -> None:
         """
         根据选择的关联度方法获取温度敏感点
+        -----
+        paras:
+        - method_name: 关联度方法
         """
         match method_name:
             case "灰色关联度":
@@ -393,9 +419,8 @@ class State(QObject):
                 self.tsp_res = cor(self.data.Xdata, self.data.Tdata, self.cluster_res)
 
     def get_ga_tsp_res(self, pop_size: int, iters: int) -> None:
-        # TODO: 在另一个线程中计算, 有没有必要
         """
-        约束遗传算法求解温度敏感点
+        约束遗传算法子线程求解温度敏感点
         ----
         - pop_size: 种群大小
         - iters: 迭代次数
@@ -414,13 +439,15 @@ class State(QObject):
             cv=cv,
         )
 
-        self.tsp_thread = GATSPThread(loss, self.data.Tdata.shape[1], pop_size, iters, self.cluster_res)
+        self.tsp_thread = GATSPThread(
+            loss, self.data.Tdata.shape[1], pop_size, iters, self.cluster_res
+        )
         self.tsp_thread.signal_tsp_result.connect(self.ga_tsp_done)
         self.tsp_thread.start()
 
     def ga_tsp_done(self, tsp_res):
         """
-        将约束遗传算法求解的温度敏感点传递给主界面
+        通知结束迭代, 将约束遗传算法求解的温度敏感点传递给主界面
         """
         self.tsp_res = tsp_res
         self.signal_ga_tsp_done.emit()
@@ -451,7 +478,13 @@ class State(QObject):
         """
         保存选取的测点温度数据和热误差数据, 并且可以插值
         -----
-        返回: 是否成功保存，保存信息
+        paras:
+        - file_path: 文件路径
+        - tsp_res_text: 温度敏感点字符串
+        - inter_num: 插值数量
+        -----
+        return:
+        - 是否成功保存，保存信息
         """
         if self.data is None:
             return False, "请先导入数据"
@@ -467,7 +500,8 @@ class State(QObject):
         """
         拟合MLR模型
         -----
-        返回: 是否成功拟合，拟合结果(拟合曲线, 测温点曲线, 截距, 系数, 均方根误差)
+        return:
+        - 是否成功拟合，拟合结果(拟合曲线, 测温点曲线, 截距, 系数, 均方根误差)
         """
 
         if self.data is None:
@@ -488,6 +522,11 @@ class State(QObject):
     def send_coef(self, coef: list) -> None:
         """
         导入拟合一阶参数
+        -----
+        paras:
+        - coef[0]: 常量
+        - coef[1:-1]: 一阶系数
+        - coef[-1]: 参数表起始序号
         """
         if self.nc_client is not None:
             items = {"values": []}
@@ -500,19 +539,19 @@ class State(QObject):
                     },
                 }
             )
-            for index, val in enumerate(coef[1:]):
+            for index, val in enumerate(coef[1:-1]):
                 items["values"].append(
                     {
                         "id": "01035407",
                         "params": {
-                            "index": 700100 + index,
+                            "index": coef[-1] + index,
                             "value": val,
                         },
                     }
                 )
             print(items)
             response = self.nc_client.set(items, need_parse=False)
-            print(response)
+            print(f"response: {response}")
             if response is not None:
                 if all(response):
                     print("设值成功")
@@ -520,6 +559,8 @@ class State(QObject):
                     print("设值失败")
             else:
                 print("设值失败")
+        else:
+            self.error_assert_nc_client_not_none.emit("请先连接机床")
 
     def load_err_model(self, para) -> None:
         """
@@ -536,6 +577,7 @@ class State(QObject):
         """
         根据模型类型和对应模型参数实例化模型, 相当于重置模型
         ----
+        paras:
         - model_type: 模型类型
         - model_para: 模型参数
         """
@@ -567,6 +609,7 @@ class State(QObject):
         """
         训练按钮点击产生的动作
         ----
+        paras:
         - para: 参数
         - tsp_res_text: 温度测点输入框字符串
         """
@@ -606,6 +649,7 @@ class State(QObject):
         """
         获取不同模型类型需要的数据集
         ----
+        paras:
         - model_type: 模型类型
         - model_para: 模型参数
         - tsp_list: 温度测点列表
@@ -649,6 +693,7 @@ class State(QObject):
         """
         启动训练线程
         ----
+        paras:
         - model_type: 模型类型
         - train_para: 训练参数
         """
@@ -693,6 +738,7 @@ class State(QObject):
         """
         导入温度预测模型
         ----
+        paras:
         - para["temp_nums"]
         - para["hidden_dim"]
         - para["num_layers"]
@@ -708,21 +754,30 @@ class State(QObject):
         )
         self.tem_model.load_state_dict(torch.load(para["file_path"]))
 
-    def import_rpm_file(self, file_path: str) -> None:
+    def import_rpm_file(self, file_path: str) -> bool:
         """
         导入采集的平均转速和温度数据文件, 提取出平均转速, 并保存在self.avg_rpm中
         -----
+        para:
         - file_path: 文件路径
+        -----
+        return:
+        - 导入成功bool值
         """
         import numpy as np
 
         data = np.loadtxt(file_path, delimiter=",")
+        # data只有一行时会导入为一维数组
+        if data.ndim == 1:
+            return False
         self.sampled_rpm = data[1:, 0]  # 第一行的没有用, 从第二行开始
+        return True
 
     def start_compen(self, para: dict) -> None:
         """
         开始代理补偿
         ----
+        paras:
         - para["degree"]:int 参数拟合阶数
         - para["interval"]: int 补偿间隔
         """
@@ -744,6 +799,7 @@ class State(QObject):
         ----
         - degree: 模型阶数
         """
+        import numpy as np
         import torch
         from src.core.gat_lstm import GATLSTM
         from src.core.bpnn import BPNN
@@ -765,18 +821,18 @@ class State(QObject):
             return
         print(f"rpm_tensor.shape: {rpm_tensor.shape}")
         # 预测温度
-        pred_temp = self.tem_model(his_tem_tensor, rpm_tensor)
-        print(f"pred_temp.shape: {pred_temp.shape}")
+        pred_temp_rise = self.tem_model(his_tem_tensor, rpm_tensor)
+        print(f"pred_temp.shape: {pred_temp_rise.shape}")
         # 根据模型类型计算预测的热误差, 先用最简单的BPNN
         if isinstance(self.err_model, BPNN):
-            pred_err = self.err_model(pred_temp)
+            pred_err = self.err_model(pred_temp_rise)
         elif isinstance(self.err_model, GATLSTM):
             from torch_geometric.data import Data
 
-            cat_temp = torch.cat((his_tem_tensor, pred_temp), dim=1).squeeze(0)
+            cat_temp_rise = torch.cat((his_tem_tensor, pred_temp_rise), dim=1).squeeze(0)
             err_list = []
-            for i in range(pred_temp.shape[1]):
-                input = cat_temp[i : i + 3, :].reshape(-1, 1)
+            for i in range(pred_temp_rise.shape[1]):
+                input = cat_temp_rise[i : i + 3, :].reshape(-1, 1)
                 data = Data(x=input, edge_index=self.edge_index)
                 err = self.err_model(data)
                 err_list.append(err)
@@ -787,13 +843,14 @@ class State(QObject):
 
         print(f"pred_err.shape: {pred_err.shape}")
 
-        # 去除多余维度并转换为numpy数组
-        self.pred_temp_numpy = pred_temp.squeeze(0).detach().numpy()
+        # 转换为numpy数组
+        pred_temp_rise_numpy = pred_temp_rise.squeeze(0).detach().numpy()
+        # 转换为绝对温度
+        self.pred_temp_numpy = pred_temp_rise_numpy + np.array(self.init_abs_temp)
         self.pred_err_numpy = pred_err.squeeze(0).detach().numpy()
+        print(f"self.pred_temp_numpy: \n {self.pred_temp_numpy}")
         print(f"self.pred_temp_numpy.shape: {self.pred_temp_numpy.shape}")
         print(f"self.pred_err_numpy.shape: {self.pred_err_numpy.shape}")
-
-        # FIXME: 换成绝对温度再去拟合
 
         fit_model = PolyLeastSquares(degree)
         fit_model.fit(self.pred_temp_numpy, self.pred_err_numpy)
