@@ -214,47 +214,7 @@ class View(QMainWindow):
         self.timer.stop()
 
     def on_change_page(self, index: int):
-        current_index = self.stack.currentIndex()
-        if current_index == index:
-            return
-
-        current_widget = self.stack.widget(current_index)
-        next_widget = self.stack.widget(index)
-
-        direction = -1 if index > current_index else 1
-        offset_y = self.stack.height() * direction
-
-        next_widget.setGeometry(0, -offset_y, self.stack.width(), self.stack.height())
-        next_widget.show()
-
-        anim_current = QPropertyAnimation(current_widget, b"pos", self)
-        anim_current.setDuration(300)
-        anim_current.setStartValue(current_widget.pos())
-        anim_current.setEndValue(current_widget.pos() + QPoint(0, offset_y))
-        anim_current.setEasingCurve(QEasingCurve.InOutQuad)
-
-        anim_next = QPropertyAnimation(next_widget, b"pos", self)
-        anim_next.setDuration(300)
-        anim_next.setStartValue(next_widget.pos())
-        anim_next.setEndValue(QPoint(0, 0))
-        anim_next.setEasingCurve(QEasingCurve.InOutQuad)
-
-        self.anim_group = QParallelAnimationGroup(self)
-        self.anim_group.addAnimation(anim_current)
-        self.anim_group.addAnimation(anim_next)
-        self.anim_group.finished.connect(lambda: self.on_animation_finished(index))
-        self.anim_group.start()
-
-    def on_animation_finished(self, index):
         self.stack.setCurrentIndex(index)
-        # 下面用来确保没有其他页面残留以及位置没错
-        for i in range(self.stack.count()):
-            widget = self.stack.widget(i)
-            if i != index:
-                widget.hide()
-                widget.move(0, 0)
-        current_widget = self.stack.currentWidget()
-        current_widget.setGeometry(0, 0, self.stack.width(), self.stack.height())
 
     def adapt_background_color(self):
         R, G, B = 236 / 255, 239 / 255, 241 / 255
