@@ -31,7 +31,8 @@ class Sample(QWidget):
 
     signal_sample_save_path = Signal(str)
     signal_start_sample = Signal(dict)
-    signal_change_orin_sample = Signal()
+    signal_change_orin_rule = Signal(str)
+    signal_swtich_plot = Signal()
     signal_stop_sample = Signal()
 
     def __init__(self, parent=None):
@@ -62,7 +63,7 @@ class Sample(QWidget):
 
         self.plot_area = QScrollArea()
         self.plot_widget = MultiPlotWidget()
-        self.plot_widget.add_switch_orin_sample_btn()
+        self.plot_widget.add_switch_btn()
         self.plot_area.setWidgetResizable(True)
         self.plot_area.setWidget(self.plot_widget)
 
@@ -87,7 +88,8 @@ class Sample(QWidget):
         self.serial_port_widget.signal_close_port.connect(self.signal_close_port)
         self.sample_rule_widget.signal_sample_save_path.connect(self.signal_sample_save_path)
         self.sample_rule_widget.signal_start_sample.connect(self.signal_start_sample)
-        self.plot_widget.signal_change_orin_sample.connect(self.signal_change_orin_sample)
+        self.sample_rule_widget.signal_change_orin_rule.connect(self.signal_change_orin_rule)
+        self.plot_widget.signal_switch_plot.connect(self.signal_swtich_plot)
         self.sample_rule_widget.signal_stop_sample.connect(self.signal_stop_sample)
 
     def set_canvas_color(self, color):

@@ -16,7 +16,7 @@ from src.components import CustomBtn, SinglePlotWidget
 
 
 class MultiPlotWidget(QWidget):
-    signal_change_orin_sample = Signal()
+    signal_switch_plot = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -96,22 +96,23 @@ class MultiPlotWidget(QWidget):
                 case 3:
                     widget.show_both()
 
-    def add_switch_orin_sample_btn(self):
+    def add_switch_btn(self):
         self.toggle_on_icon = QIcon("src/icons/switch_on.png")
         self.toggle_off_icon = QIcon("src/icons/switch_off.png")
 
         self.btn_switch = CustomBtn("switch", self.toggle_off_icon)
         self.hLayout_buttons.addWidget(self.btn_switch)
-        self.btn_switch.setToolTip("切换原始\规则数据")
         self.btn_switch.clicked.connect(self.switch_orin_sample)
 
     def switch_orin_sample(self):
         self.toggle_on = not self.toggle_on
         if self.toggle_on:
             self.btn_switch.setIcon(self.toggle_on_icon)
+            self.btn_switch.setToolTip("关闭图像")
         else:
+            self.btn_switch.setToolTip("显示图像")
             self.btn_switch.setIcon(self.toggle_off_icon)
-        self.signal_change_orin_sample.emit()
+        self.signal_switch_plot.emit()
 
     def plot_sample_data(self, data, tem_from_nc):
         self.initial_widget.plot_sample_data(data, tem_from_nc)

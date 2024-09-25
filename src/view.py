@@ -32,7 +32,8 @@ class View(QMainWindow):
     signal_close_port = Signal()
     signal_sample_save_path = Signal(str)
     signal_start_sample = Signal(dict)
-    signal_change_orin_sample = Signal()
+    signal_switch_plot = Signal()
+    signal_change_orin_rule = Signal(str)
     signal_stop_sample = Signal()
 
     signal_import_data = Signal(list)
@@ -135,8 +136,10 @@ class View(QMainWindow):
         self.sample_page.signal_sample_save_path.connect(self.signal_sample_save_path)
         # 开始采集
         self.sample_page.signal_start_sample.connect(self.signal_start_sample)
-        # 切换显示原始\采样数据
-        self.sample_page.signal_change_orin_sample.connect(self.signal_change_orin_sample)
+        # 显示\关闭图像
+        self.sample_page.signal_swtich_plot.connect(self.signal_switch_plot)
+        # 切换显示原始\规则图像
+        self.sample_page.signal_change_orin_rule.connect(self.signal_change_orin_rule)
         # 停止采集
         self.sample_page.signal_stop_sample.connect(self.signal_stop_sample)
         # 导入数据

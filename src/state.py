@@ -30,7 +30,7 @@ class State(QObject):
     signal_start_sample_success = Signal()
     signal_show_orin_data = Signal()
     signal_update_time = Signal()
-    signal_show_sample_data = Signal()
+    signal_show_rule_data = Signal()
 
     signal_ga_tsp_done = Signal()
 
@@ -74,10 +74,14 @@ class State(QObject):
         self.avg_rpm = []
         # 一分钟内统计的60秒总转速
         self.total_rpm = 0
+        # 是否显示图像
+        self.show_sample_plot = False
         # 是否显示原始采集数据
         self.show_orin = True
+        # 是否显示规则采集数据
+        self.show_rule = False
         # 是否从NC采集温度
-        self.tem_from_nc = True
+        self.tem_is_from_nc = True
         # 从NC采集温升的寄存器个数
         self.nc_reg_num = None
 
@@ -193,14 +197,14 @@ class State(QObject):
     def start_sample(self, para):
         # 前置条件判断
         if para["tem_from"] == "采集卡":
-            self.tem_from_nc = False
+            self.tem_is_from_nc = False
             if self.tem_modbus_client is None:
                 self.error_assert_temp_card_not_none.emit(
                     "选择从采集卡采集温度, 但是采集卡没有连接成功"
                 )
                 return
         else:
-            self.tem_from_nc = True
+            self.tem_is_from_nc = True
             self.nc_reg_num = para["reg_num"]
             if self.nc_client is None:
                 self.error_assert_nc_client_not_none.emit("选择从NC采集温度, 但是NC没有连接成功")
@@ -311,7 +315,7 @@ class State(QObject):
         # print(f"err_idx: {self.err_idx}")
 
         # 发送显示原始数据信号
-        if self.show_orin:
+        if self.show_sample_plot and self.show_orin:
             self.signal_show_orin_data.emit()
 
     def save_rpm_temp_data(self) -> None:
@@ -320,7 +324,7 @@ class State(QObject):
         self.total_rpm += self.orin_data["nc_chan"][-1][2]
         if self.data_collector_thread.counter % RPM_AVG_INTER == 0:
             self.avg_rpm.append(round(self.total_rpm / RPM_AVG_INTER))
-            if self.tem_from_nc:
+            if self.tem_is_from_nc:
                 temp = self.orin_data["nc_reg_g"][-1][: self.nc_reg_num]
             elif "card_temp" in self.orin_data:
                 temp = self.orin_data["card_temp"][-1]
@@ -344,17 +348,17 @@ class State(QObject):
         self.rule_count += 1
         for key, value in self.orin_data.items():
             self.rule_data[key].append(value[-1])
-            if key == "nc_reg_g" and self.tem_from_nc:
+            if key == "nc_reg_g" and self.tem_is_from_nc:
                 rule_record.append(value[-1][: self.nc_reg_num])
-            if key == "card_temp" and not self.tem_from_nc:
+            if key == "card_temp" and not self.tem_is_from_nc:
                 rule_record.append(value[-1])
             if key == "error":
                 rule_record.append(value[-1])
         with open(self.rule_data_filepath, "a", newline="") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(extract_numbers(rule_record))
-        if not self.show_orin:
-            self.signal_show_sample_data.emit()
+        if self.show_sample_plot and self.show_rule:
+            self.signal_show_rule_data.emit()
 
     def get_data(self, para: list) -> bool:
         """

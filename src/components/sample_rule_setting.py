@@ -19,10 +19,14 @@ class SampleRuleSetting(QGroupBox):
     signal_sample_save_path = Signal(str)
     signal_start_sample = Signal(dict)
     signal_stop_sample = Signal()
+    signal_change_orin_rule = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("采样规则")
+        self.setTitle("采集设置")
+
+        self.show_reg_num = False
+
         self.vLayout = QVBoxLayout(self)
         self.vLayout.setSpacing(10)
 
@@ -58,15 +62,20 @@ class SampleRuleSetting(QGroupBox):
         )
         self.sample_widget.combo_box.setCurrentIndex(2)
 
-        self.tem_from_layout = QFormLayout()
+        self.form_layout = QFormLayout()
         self.combo_tem_from = QComboBox()
         self.combo_tem_from.addItem("寄存器")
         self.combo_tem_from.addItem("采集卡")
         self.combo_tem_from.currentTextChanged.connect(self.add_reg_num_edit)
-        self.tem_from_layout.addRow(QLabel("采集温度:"), self.combo_tem_from)
+        self.choose_plot_data = QComboBox()
+        self.choose_plot_data.addItems(["原始数据", "规则数据"])
+        self.choose_plot_data.currentTextChanged.connect(self.on_change_plot_data)
+        self.form_layout.addRow("绘图类型:", self.choose_plot_data)
+        self.form_layout.addRow("采集温度:", self.combo_tem_from)
         self.edit_reg_num = QLineEdit("6")
-        self.tem_from_layout.addRow("温度数量:", self.edit_reg_num)
-        self.vLayout.addLayout(self.tem_from_layout)
+        self.form_layout.addRow("温度数量:", self.edit_reg_num)
+
+        self.vLayout.addLayout(self.form_layout)
 
         # self.check_rpm_tem = QCheckBox("转速温度")
         # self.check_compen_val = QCheckBox("轴补偿值")
@@ -85,13 +94,16 @@ class SampleRuleSetting(QGroupBox):
         self.btn_sample_data_save_path.clicked.connect(self.on_btn_save_path)
         self.btn_start_sample.clicked.connect(self.on_btn_start_sample)
 
+    def on_change_plot_data(self, choose_type):
+        self.signal_change_orin_rule.emit(choose_type)
+
     def add_reg_num_edit(self, text):
         if text == "寄存器":
             self.edit_reg_num = QLineEdit("6")
-            self.tem_from_layout.addRow("温度数量:", self.edit_reg_num)
+            self.form_layout.addRow("温度数量:", self.edit_reg_num)
         else:
-            if self.tem_from_layout.rowCount() > 1:
-                self.tem_from_layout.removeRow(1)
+            if self.form_layout.rowCount() > 2:
+                self.form_layout.removeRow(2)
 
     def on_btn_save_path(self):
         file_filter = "采样数据 (*.csv)"
