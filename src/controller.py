@@ -46,7 +46,8 @@ class Controller:
         self.state.signal_open_port_status.connect(self.on_open_port_status)
         self.view.signal_sample_save_path.connect(self.on_sample_save_path)
         self.view.signal_start_sample.connect(self.on_start_sample)
-        self.view.signal_change_orin_sample.connect(self.on_change_orin_sample)
+        self.view.signal_switch_plot.connect(self.on_change_switch_plot)
+        self.view.signal_change_orin_rule.connect(self.on_change_plot_data)
         self.view.signal_stop_sample.connect(self.on_stop_sample)
         self.state.error_assert_nc_client_not_none.connect(self.on_error_nc_client_none)
         self.state.error_assert_temp_card_not_none.connect(self.on_error_temp_card_none)
@@ -54,7 +55,7 @@ class Controller:
         self.state.signal_start_sample_success.connect(self.on_set_stop_sample_btn)
         self.state.signal_show_orin_data.connect(self.on_show_orin_data)
         self.state.signal_update_time.connect(self.on_update_time)
-        self.state.signal_show_sample_data.connect(self.on_show_rule_data)
+        self.state.signal_show_rule_data.connect(self.on_show_rule_data)
 
         self.view.signal_import_data.connect(self.on_import_data)
         self.view.signal_plot_files.connect(self.on_plot_files)
@@ -156,15 +157,28 @@ class Controller:
         self.view.show_status_message("开始采集数据", 3000)
         self.state.start_sample(para)
 
-    def on_change_orin_sample(self):
-        self.state.show_orin = not self.state.show_orin
-        # 因为切换到数据类型需要等到下次更新数据才能切换, 这里直接切换显示数据
-        if self.state.show_orin:
-            self.view.show_status_message("切换为显示原始采集数据", 3000)
-            self.on_show_orin_data()
+    def on_change_switch_plot(self):
+        self.state.show_sample_plot = not self.state.show_sample_plot
+        if self.state.show_sample_plot:
+            self.view.show_status_message("开启更新图像", 3000)
+            if self.state.show_orin:
+                self.on_show_orin_data()
+            else:
+                self.on_show_rule_data()
         else:
-            self.view.show_status_message("切换为显示规则采集数据", 3000)
-            self.on_show_rule_data()
+            self.view.show_status_message("关闭更新图像", 3000)
+    
+    def on_change_plot_data(self, data_type):
+        if data_type == "原始数据":
+            self.state.show_orin = True
+            self.state.show_rule = False
+            if self.state.show_sample_plot:
+                self.on_show_orin_data()
+        elif data_type == "规则数据":
+            self.state.show_orin = False
+            self.state.show_rule = True
+            if self.state.show_sample_plot:
+                self.on_show_rule_data()
 
     def on_set_stop_sample_btn(self):
         self.view.sample_page.sample_rule_widget.set_btn_stop_sample()
@@ -177,12 +191,12 @@ class Controller:
 
     def on_show_orin_data(self):
         self.view.sample_page.plot_widget.plot_sample_data(
-            self.state.orin_data, self.state.tem_from_nc
+            self.state.orin_data, self.state.tem_is_from_nc
         )
 
     def on_show_rule_data(self):
         self.view.sample_page.plot_widget.plot_sample_data(
-            self.state.rule_data, self.state.tem_from_nc
+            self.state.rule_data, self.state.tem_is_from_nc
         )
 
     def on_update_time(self):
