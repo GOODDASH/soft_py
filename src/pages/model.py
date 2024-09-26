@@ -36,6 +36,7 @@ class Model(QWidget):
         self.model_widget = QWidget()
         self.model_widget.setMaximumWidth(500)
         self.model_widget_layout = QVBoxLayout(self.model_widget)
+        self.model_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.model_widget_layout.setSpacing(15)
         self.model_widget_layout.addWidget(self.model_choose)
         self.model_widget_layout.addWidget(self.model_train)
@@ -49,7 +50,7 @@ class Model(QWidget):
         self.plot_area.setWidget(self.plot_widget)
 
         self.vlayout = QVBoxLayout(self)
-        self.vlayout.setContentsMargins(0, 10, 10, 10)
+        self.vlayout.setContentsMargins(0, 10, 10, 0)
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.addWidget(self.model_setting_area)
         self.splitter.addWidget(self.plot_area)

@@ -101,6 +101,7 @@ class MultiPlotWidget(QWidget):
         self.toggle_off_icon = QIcon("src/icons/switch_off.png")
 
         self.btn_switch = CustomBtn("switch", self.toggle_off_icon)
+        self.btn_switch.setToolTip("显示图像")
         self.hLayout_buttons.addWidget(self.btn_switch)
         self.btn_switch.clicked.connect(self.switch_orin_sample)
 

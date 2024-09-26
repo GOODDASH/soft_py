@@ -135,7 +135,7 @@ class TspRes(QGroupBox):
         if self.edit_mlr_paras:
             for line_edit in self.edit_mlr_paras:
                 line_edit.setEnabled(flag)
-        if self.edit_para_start_idx:
+        if hasattr(self, "edit_para_start_idx") and self.edit_para_start_idx:
             self.edit_para_start_idx.setEnabled(flag)
 
     def change_negative(self, flag):

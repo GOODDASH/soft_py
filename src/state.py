@@ -13,7 +13,7 @@ from PyQt5.QtCore import pyqtSignal as Signal, QObject, QTimer
 
 
 MAX_DATA_LEN = 1800  # 默认原始数据最大长度, 只显示最近半小时
-DEFAULT_SAMPLE_PATH = "./data/collected"  # 默认采集文件夹路径
+DEFAULT_SAMPLE_PATH = "./data"  # 默认采集文件夹路径
 RPM_AVG_INTER = 60  # 默认统计RPM平均值间隔(s)
 
 
@@ -812,6 +812,7 @@ class State(QObject):
         # 历史温度变化趋势转换为tensor
         his_tem_tensor = torch.tensor(self.his_rel_temp, dtype=torch.float32).unsqueeze(0)
         print(f"his_tem_tensor: \n {his_tem_tensor}")
+
         # 未来平均转速转换为tensor
         start_idx = self.compen_count * self.compen_interval
         end_idx = (self.compen_count + 1) * self.compen_interval
@@ -824,9 +825,11 @@ class State(QObject):
             print("未来平均转速数据不足, 不再更新参数")
             return
         print(f"rpm_tensor.shape: {rpm_tensor.shape}")
+
         # 预测温度
         pred_temp_rise = self.tem_model(his_tem_tensor, rpm_tensor)
-        print(f"pred_temp.shape: {pred_temp_rise.shape}")
+        print(f"pred_temp_rise: {pred_temp_rise}")
+
         # 根据模型类型计算预测的热误差, 先用最简单的BPNN
         if isinstance(self.err_model, BPNN):
             pred_err = self.err_model(pred_temp_rise)
@@ -844,24 +847,26 @@ class State(QObject):
         else:
             # 未知模型类型
             return
+        print(f"pred_err: {pred_err}")
 
-        print(f"pred_err.shape: {pred_err.shape}")
-
-        # 转换为numpy数组
+        # 温升tensor转换为numpy数组
         pred_temp_rise_numpy = pred_temp_rise.squeeze(0).detach().numpy()
+
         # 转换为绝对温度
         self.pred_temp_numpy = pred_temp_rise_numpy + np.array(self.init_abs_temp)
         self.pred_err_numpy = pred_err.squeeze(0).detach().numpy()
-        print(f"self.pred_temp_numpy: \n {self.pred_temp_numpy}")
         print(f"self.pred_temp_numpy.shape: {self.pred_temp_numpy.shape}")
         print(f"self.pred_err_numpy.shape: {self.pred_err_numpy.shape}")
 
+        # 拟合参数
         fit_model = PolyLeastSquares(degree)
         fit_model.fit(self.pred_temp_numpy, self.pred_err_numpy)
 
+        # 记录参数更新次数
         self.compen_count += 1
 
         self.coef_fit = fit_model.get_coefficients()
         print(f"self.coef_fit.shape: {self.coef_fit.shape}")
 
+        # 通知界面显示拟合参数
         self.signal_fit_coef.emit([degree, self.coef_fit])

@@ -33,6 +33,7 @@ class Compen(QWidget):
         self.compen_widget = QWidget()
         self.compen_widget.setMaximumWidth(500)
         self.compen_widget_layout = QVBoxLayout(self.compen_widget)
+        self.compen_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.compen_widget_layout.setSpacing(15)
         self.compen_widget_layout.addWidget(self.import_tem_model)
         self.compen_widget_layout.addWidget(self.import_rpm)
@@ -47,7 +48,7 @@ class Compen(QWidget):
         self.plot_area.setWidget(self.plot_widget)
 
         self.vlayout = QVBoxLayout(self)
-        self.vlayout.setContentsMargins(0, 10, 10, 10)
+        self.vlayout.setContentsMargins(0, 10, 10, 0)
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.addWidget(self.compen_setting_area)
         self.splitter.addWidget(self.plot_area)

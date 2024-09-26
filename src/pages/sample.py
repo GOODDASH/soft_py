@@ -52,6 +52,7 @@ class Sample(QWidget):
         self.sample_widget = QWidget()
         self.sample_widget.setMaximumWidth(500)
         self.sample_widget_layout = QVBoxLayout(self.sample_widget)
+        self.sample_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.sample_widget_layout.setSpacing(15)
         self.sample_widget_layout.addWidget(self.nc_link_widget)
         self.sample_widget_layout.addWidget(self.tem_card_widget)
@@ -68,7 +69,7 @@ class Sample(QWidget):
         self.plot_area.setWidget(self.plot_widget)
 
         self.vlayout = QVBoxLayout(self)
-        self.vlayout.setContentsMargins(0, 10, 10, 10)
+        self.vlayout.setContentsMargins(0, 10, 10, 0)
         self.splitter = QSplitter(Qt.Horizontal)
 
         self.splitter.addWidget(self.sample_setting_area)
@@ -122,7 +123,8 @@ if __name__ == "__main__":
     plt.rcParams["font.sans-serif"] = ["Sarasa UI SC"]
     plt.rcParams["font.size"] = 14
     plt.rcParams["axes.unicode_minus"] = False
-
+    plt.style.use("ggplot")
+    
     app = QApplication(sys.argv)
     sample = Sample()
     sample.resize(1200, 800)

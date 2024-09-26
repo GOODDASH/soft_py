@@ -29,6 +29,7 @@ class Tsp(QWidget):
         self.tsp_widget = QWidget()
         self.tsp_widget.setMaximumWidth(500)
         self.tsp_widget_layout = QVBoxLayout(self.tsp_widget)
+        self.tsp_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.tsp_widget_layout.setSpacing(15)
         self.tsp_widget_layout.addWidget(self.import_data)
         self.tsp_widget_layout.addWidget(self.tsp_config)
@@ -43,7 +44,7 @@ class Tsp(QWidget):
         self.plot_area.setWidget(self.plot_widget)
 
         self.vlayout = QVBoxLayout(self)
-        self.vlayout.setContentsMargins(0, 10, 10, 10)
+        self.vlayout.setContentsMargins(0, 10, 10, 0)
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.addWidget(self.tsp_setting_area)
         self.splitter.addWidget(self.plot_area)

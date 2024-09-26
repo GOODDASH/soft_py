@@ -10,10 +10,6 @@ from PyQt5.QtCore import (
     pyqtSignal as Signal,
     Qt,
     QTimer,
-    QPropertyAnimation,
-    QEasingCurve,
-    QParallelAnimationGroup,
-    QPoint,
 )
 from PyQt5.QtGui import QKeySequence
 
@@ -87,11 +83,11 @@ class View(QMainWindow):
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        vLayout = QHBoxLayout(central_widget)
-        vLayout.setSpacing(0)
-        vLayout.setContentsMargins(0, 0, 0, 0)
-        vLayout.addWidget(self.side_menu)
-        vLayout.addWidget(self.stack)
+        hLayout = QHBoxLayout(central_widget)
+        hLayout.setSpacing(10)
+        hLayout.setContentsMargins(0, 0, 0, 0)
+        hLayout.addWidget(self.side_menu)
+        hLayout.addWidget(self.stack)
 
         self.info_label = QLabel()
         self.info_label.setObjectName("statusLabel")
