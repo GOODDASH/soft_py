@@ -1,4 +1,5 @@
 .env/
+others/
 **/__pycache__/
 **.pth
 **.csv

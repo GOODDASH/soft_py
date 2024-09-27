@@ -25,7 +25,7 @@ pip install -r requirements.txt
 .env\Scripts\python.exe .\main.py   
 ```
 
-如果安装完字体, `matplotlib`还是提示缺失字体，删除`C:\Users\xxx\.matplotlib`文件夹下的所有文件后重试
+如果安装完字体, `matplotlib`还是提示缺失字体，删除`C:\Users\xxx\.matplotlib`文件夹下的所有文件后重试（字体缓存）
 
 #### 1.2. 待完成事项
 
@@ -126,6 +126,9 @@ black --line-length 100 ./src/
 
 在`src\components\model_choose.py`中：
 
+- 添加模型名称:
+  `__init__`下添加，例如`self.model_type.addItem("BPNN")`
+
 - 界面添加模型所需参数的输入：
 `create_model_type_widget`方法下添加相应的参数`widget`, 并添加到`model_stacked`
 - 添加更新模型显示条件分支：
@@ -135,18 +138,32 @@ black --line-length 100 ./src/
 
 #### 2.4.2 后端逻辑
 
-`src\state.py`中：
+**导入模型：**
+
+在`src\state.py`下：
 
 - 设置导入模型：
 `reset_model`方法下`match`分支添加模型实例化方法
-- 创建训练数据集：
-`get_datasets`方法下`match`分支添加模型训练数据集创建方法
-- 设置`DataLoader`（因为`torch_geometric`和`torch`的`DataLoader`是不兼容的）：
-`train_thread_start`方法下确定用到的`DataLoader`
 
-`src\thread\model_train_thread.py`(非必要)
+**训练相关：**
+
+在`src\state.py`下：
+
+- 创建训练数据集：
+  `get_datasets`方法下`match`分支添加模型训练数据集创建方法
+- 设置`DataLoader`（因为`torch_geometric`和`torch`的`DataLoader`是不兼容的）：
+  `get_data_loader`方法下确定用到的`DataLoader`
+
+在`src\thread\model_train_thread.py`下：
 
 - 如果用到了除了`torch_geometric`和`torch`的`DataLoader`另外的`DataLoader`, 还需在`get_loss`方法中添加对应计算损失值的方法
+
+**补偿相关：**
+
+在`src\state.py`下：
+
+- 根据预测温升（加上历史温升）计算热误差：
+  `get_pred_err`方法下添加对应模型得到预测输出值的方法
 
 ### 2.5 调试软件
 

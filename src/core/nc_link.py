@@ -188,7 +188,7 @@ class NCLink:
             id_ = self.id_name_hash.get(parts[0])
             if id_ is None:
                 return "未找到对应id, 请检查"
-            
+
             try:
                 index = int(parts[1])
             except ValueError:
@@ -285,31 +285,9 @@ if __name__ == "__main__":
     port = 1883
     nc_client = NCLink(mqtt_ip=broker_ip, mqtt_port=port, sn=SN, client_id="LUCKDASH")
     nc_client.connect()
-    
-    # items = {
-    #         "values": [
-    #             {
-    #             "id": "01035437",
-    #             "params": {
-    #                 "index": 200,
-    #                 "value": 1,
-    #                 }
-    #             },
-    #             {
-    #             "id": "01035437",
-    #             "params": {
-    #                 "index": 201,
-    #                 "value": 2,
-    #                 }
-    #             },
-    #             ]
-    #         }
-    
 
-    # TODO: 测试设值
-    nc_rev = nc_client.set(
-        ["REG_B:200:1", "REG_B:201:2"]
-    )
+    # 测试设值
+    nc_rev = nc_client.set(["REG_B:200:1", "REG_B:201:2"])
     print(nc_rev)
 
     # 测试读值
@@ -322,5 +300,3 @@ if __name__ == "__main__":
     #     )
     #     print(nc_rev)
     #     time.sleep(2)
-        
-        

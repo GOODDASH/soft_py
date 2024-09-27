@@ -23,13 +23,13 @@ class MyData:
 
             try:
                 array = read_datafile_to_numpy(
-                file_path,
-                trans=flag_transpose,
-                sep=self.sep,
-                t_begin=para[3],
-                t_end=para[4],
-                e_idx=para[5],
-            )
+                    file_path,
+                    trans=flag_transpose,
+                    sep=self.sep,
+                    t_begin=para[3],
+                    t_end=para[4],
+                    e_idx=para[5],
+                )
             except Exception as e:
                 return f"读取文件{file_path}时出错：{e}"
             array = array - array[0, :]  # 减去第一行，换算成温升和热伸长

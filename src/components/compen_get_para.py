@@ -16,10 +16,6 @@ from PyQt5.QtWidgets import (
 )
 
 
-# TODO: 因为参数是在B寄存器中，可以实时修改，打算代理模型参数更新设为定时更新
-# 设置一个定时更新的时间（也是预测温度的长度），之后一直按照这个频率更新
-
-
 class CompenGetPara(QGroupBox):
     signal_start_compen = Signal(dict)
     signal_stop_compen = Signal()

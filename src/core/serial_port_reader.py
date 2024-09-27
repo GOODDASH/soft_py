@@ -29,7 +29,7 @@ class SerialPortReader:
                 if self.ser.in_waiting:
                     data_str = self.ser.read(self.ser.in_waiting).decode("utf-8").strip()
                     # print(data_str)  # "1 MW +011.0105 mm"
-                    match = re.search(r'([+|-]\d+\.\d+)', data_str)
+                    match = re.search(r"([+|-]\d+\.\d+)", data_str)
                     try:
                         self.latest_data = float(match.group())
                     except ValueError:

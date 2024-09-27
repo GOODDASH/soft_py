@@ -120,7 +120,7 @@ class DataCollectorThread(QThread):
         # 每个轴采集
         items = [
             "REG_G:3080-3100",
-            "AXIS_0:40,41,43,49,53",  
+            "AXIS_0:40,41,43,49,53",
             "AXIS_1:40,41,43,49,53",
             "AXIS_2:40,41,43,49,53",
             "CHAN_0:27,32,47",

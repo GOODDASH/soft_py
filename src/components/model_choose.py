@@ -22,20 +22,6 @@ class ModelChoose(QGroupBox):
         super().__init__(parent)
         self.setTitle("设置模型")
 
-        # GAT-LSTM需要的输入
-        self.edit_num_heads = QLineEdit()
-        self.edit_gnn_dim = QLineEdit()
-        self.edit_lstm_dim = QLineEdit()
-        self.edit_num_nodes = QLineEdit()
-        self.edit_seq_len = QLineEdit()
-        self.btn_set_edge_index = QPushButton("编辑图节点")
-        self.edit_edge_start = QLineEdit()
-        self.edit_edge_end = QLineEdit()
-
-        # 示例BPNN需要的输入
-        self.edit_bpnn_hidden_dim = QLineEdit("32")
-        self.edit_bpnn_input_shape = QLineEdit("6")
-
         self.vLayout = QVBoxLayout(self)
         self.vLayout.setSpacing(10)
 
@@ -97,19 +83,28 @@ class ModelChoose(QGroupBox):
         gat_lstm_widget = QWidget()
         gat_lstm_widget_layout = QVBoxLayout(gat_lstm_widget)
         gat_lstm_widget_layout.setContentsMargins(30, 10, 30, 10)
-        bpnn_formlayout = QFormLayout()
-        bpnn_formlayout.addRow("注意力头数:", self.edit_num_heads)
-        bpnn_formlayout.addRow("GAT隐藏维度: ", self.edit_gnn_dim)
-        bpnn_formlayout.addRow("LSTM隐藏维度: ", self.edit_lstm_dim)
-        bpnn_formlayout.addRow("测点个数: ", self.edit_num_nodes)
-        bpnn_formlayout.addRow("时间窗口长度: ", self.edit_seq_len)
+        # GAT-LSTM需要的输入
+        self.edit_num_heads = QLineEdit()
+        self.edit_gnn_dim = QLineEdit()
+        self.edit_lstm_dim = QLineEdit()
+        self.edit_num_nodes = QLineEdit()
+        self.edit_seq_len = QLineEdit()
+        self.btn_set_edge_index = QPushButton("编辑图节点")
+        self.edit_edge_start = QLineEdit()
+        self.edit_edge_end = QLineEdit()
+        gat_lstm_formlayout = QFormLayout()
+        gat_lstm_formlayout.addRow("注意力头数:", self.edit_num_heads)
+        gat_lstm_formlayout.addRow("GAT隐藏维度: ", self.edit_gnn_dim)
+        gat_lstm_formlayout.addRow("LSTM隐藏维度: ", self.edit_lstm_dim)
+        gat_lstm_formlayout.addRow("测点个数: ", self.edit_num_nodes)
+        gat_lstm_formlayout.addRow("时间窗口长度: ", self.edit_seq_len)
         hLayout1 = QHBoxLayout()
         hLayout2 = QHBoxLayout()
         hLayout1.addWidget(QLabel("起始点:"))
         hLayout1.addWidget(self.edit_edge_start)
         hLayout2.addWidget(QLabel("终止点:"))
         hLayout2.addWidget(self.edit_edge_end)
-        gat_lstm_widget_layout.addLayout(bpnn_formlayout)
+        gat_lstm_widget_layout.addLayout(gat_lstm_formlayout)
         gat_lstm_widget_layout.addWidget(self.btn_set_edge_index)
         gat_lstm_widget_layout.addLayout(hLayout1)
         gat_lstm_widget_layout.addLayout(hLayout2)
@@ -118,16 +113,26 @@ class ModelChoose(QGroupBox):
         bpnn_widget = QWidget()
         bpnn_widget_layout = QVBoxLayout(bpnn_widget)
         bpnn_widget_layout.setContentsMargins(30, 10, 30, 10)
+        # 示例BPNN需要的输入
+        self.edit_bpnn_hidden_dim = QLineEdit("32")
+        self.edit_bpnn_input_shape = QLineEdit("6")
         bpnn_formlayout = QFormLayout()
         bpnn_formlayout.addRow("隐藏维度:", self.edit_bpnn_hidden_dim)
         bpnn_formlayout.addRow("测点个数:", self.edit_bpnn_input_shape)
-
         bpnn_widget_layout.addLayout(bpnn_formlayout)
+        bpnn_widget_layout.setSpacing(10)
 
         model_stacked.addWidget(gat_lstm_widget)
         model_stacked.addWidget(bpnn_widget)
 
         return model_stacked
+
+    def update_model_type_widget(self, model_type):
+        match model_type:
+            case "GAT-LSTM":
+                self.model_stacked.setCurrentIndex(0)
+            case "BPNN":
+                self.model_stacked.setCurrentIndex(1)
 
     def get_edge_index(self):
         edge_index = []
@@ -144,13 +149,6 @@ class ModelChoose(QGroupBox):
             height = current_widget.sizeHint().height()
             self.model_stacked.setMaximumHeight(height)
             self.model_stacked.resize(self.model_stacked.width(), height)
-
-    def update_model_type_widget(self, model_type):
-        match model_type:
-            case "GAT-LSTM":
-                self.model_stacked.setCurrentIndex(0)
-            case "BPNN":
-                self.model_stacked.setCurrentIndex(1)
 
     def on_btn_set_edge_index(self):
         from src.components import GraphEdit

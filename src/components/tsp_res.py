@@ -25,7 +25,6 @@ class TspRes(QGroupBox):
 
         # 存储多元线性回归拟合结果
         self.edit_mlr_paras = []
-        
 
         self.vLayout = QVBoxLayout(self)
         self.vLayout.setSpacing(10)
@@ -121,7 +120,7 @@ class TspRes(QGroupBox):
             label.setEnabled(False)
             self.edit_mlr_paras.append(label)
             formlayout.addRow(f"拟合系数{i+1}: ", label)
-            
+
         # 设置参数表起始位置
         self.edit_para_start_idx = QLineEdit("700000")
         self.edit_para_start_idx.setEnabled(False)

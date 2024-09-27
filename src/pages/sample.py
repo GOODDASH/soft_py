@@ -124,7 +124,7 @@ if __name__ == "__main__":
     plt.rcParams["font.size"] = 14
     plt.rcParams["axes.unicode_minus"] = False
     plt.style.use("ggplot")
-    
+
     app = QApplication(sys.argv)
     sample = Sample()
     sample.resize(1200, 800)

@@ -522,7 +522,6 @@ class State(QObject):
             )
             return True, [pred_list, tsp_list, intercept, coef, rmse]
 
-    # TODO: 需要测试导入功能
     def send_coef(self, coef: list) -> None:
         """
         导入拟合一阶参数
@@ -703,16 +702,8 @@ class State(QObject):
         """
         self.signal_start_train.emit()  # 通知GUI界面开始训练
 
-        # 根据模型类型选择不同的dataloader
-        match model_type:
-            case "GAT-LSTM":
-                from torch_geometric.loader import DataLoader as GeometricDataLoader
-
-                dataloader = GeometricDataLoader
-            case "BPNN":
-                from torch.utils.data import DataLoader as TorchDataLoader
-
-                dataloader = TorchDataLoader
+        # 选择dataloader
+        dataloader = self.get_data_loader(model_type)
 
         from src.thread.model_train_thread import ModelTrainThread
 
@@ -727,6 +718,25 @@ class State(QObject):
         self.thread_train.signal_train_val_loss.connect(self.signal_train_val_loss)
         self.thread_train.signal_train_finished.connect(self.signal_train_finished)
         self.thread_train.start()
+
+    def get_data_loader(self, model_type: str):
+        """
+        根据模型类型选择不同的dataloader
+        -----
+        paras:
+        - model_type: 模型类型
+        """
+        match model_type:
+            case "GAT-LSTM":
+                from torch_geometric.loader import DataLoader as GeometricDataLoader
+
+                dataloader = GeometricDataLoader
+            case "BPNN":
+                from torch.utils.data import DataLoader as TorchDataLoader
+
+                dataloader = TorchDataLoader
+
+        return dataloader
 
     def save_model(self, file_path: str) -> None:
         """
@@ -801,12 +811,10 @@ class State(QObject):
         """
         计算一阶、二阶代理模型拟合参数
         ----
-        - degree: 模型阶数
+        - degree:int 模型阶数
         """
         import numpy as np
         import torch
-        from src.core.gat_lstm import GATLSTM
-        from src.core.bpnn import BPNN
         from src.core.poly_least_squares import PolyLeastSquares
 
         # 历史温度变化趋势转换为tensor
@@ -830,23 +838,10 @@ class State(QObject):
         pred_temp_rise = self.tem_model(his_tem_tensor, rpm_tensor)
         print(f"pred_temp_rise: {pred_temp_rise}")
 
-        # 根据模型类型计算预测的热误差, 先用最简单的BPNN
-        if isinstance(self.err_model, BPNN):
-            pred_err = self.err_model(pred_temp_rise)
-        elif isinstance(self.err_model, GATLSTM):
-            from torch_geometric.data import Data
-
-            cat_temp_rise = torch.cat((his_tem_tensor, pred_temp_rise), dim=1).squeeze(0)
-            err_list = []
-            for i in range(pred_temp_rise.shape[1]):
-                input = cat_temp_rise[i : i + 3, :].reshape(-1, 1)
-                data = Data(x=input, edge_index=self.edge_index)
-                err = self.err_model(data)
-                err_list.append(err)
-            pred_err = torch.cat(err_list, dim=0).unsqueeze(0)
-        else:
-            # 未知模型类型
+        pred_err = self.get_pred_err(pred_temp_rise, his_tem_tensor)
+        if pred_err is None:
             return
+
         print(f"pred_err: {pred_err}")
 
         # 温升tensor转换为numpy数组
@@ -868,5 +863,37 @@ class State(QObject):
         self.coef_fit = fit_model.get_coefficients()
         print(f"self.coef_fit.shape: {self.coef_fit.shape}")
 
+        # TODO: 导入拟合的参数
+
         # 通知界面显示拟合参数
         self.signal_fit_coef.emit([degree, self.coef_fit])
+
+    def get_pred_err(self, pred_temp_rise, his_tem_tensor):
+        """
+        根据历史温升和预测温升计算预测的热误差
+        """
+        import torch
+        from src.core.bpnn import BPNN
+        from src.core.gat_lstm import GATLSTM
+
+        # 根据模型类型计算预测的热误差, 先用最简单的BPNN
+        if isinstance(self.err_model, BPNN):
+            pred_err = self.err_model(pred_temp_rise)
+
+            return pred_err
+        elif isinstance(self.err_model, GATLSTM):
+            from torch_geometric.data import Data
+
+            cat_temp_rise = torch.cat((his_tem_tensor, pred_temp_rise), dim=1).squeeze(0)
+            err_list = []
+            for i in range(pred_temp_rise.shape[1]):
+                input = cat_temp_rise[i : i + 3, :].reshape(-1, 1)
+                data = Data(x=input, edge_index=self.edge_index)
+                err = self.err_model(data)
+                err_list.append(err)
+            pred_err = torch.cat(err_list, dim=0).unsqueeze(0)
+
+            return pred_err
+        else:
+            # 未知模型类型
+            return None

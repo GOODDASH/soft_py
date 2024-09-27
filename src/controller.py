@@ -167,7 +167,7 @@ class Controller:
                 self.on_show_rule_data()
         else:
             self.view.show_status_message("关闭更新图像", 3000)
-    
+
     def on_change_plot_data(self, data_type):
         if data_type == "原始数据":
             self.state.show_orin = True
@@ -344,7 +344,7 @@ class Controller:
     def ui_train_val_loss(self, para):
         self.view.model_page.update_loss_canvas(para, self.state.data.Xdata)
         self.view.show_status_message(
-            f"训练损失: {para[3]:.3f}, 验证损失: {para[4]:.3f}, 测试损失: {para[5]:.3f}"
+            f"第{para[0]+1}折的第{para[1]+1}epoch; 训练损失: {para[3]:.3f}; 验证损失: {para[4]:.3f}; 测试损失: {para[5]:.3f}"
         )
 
     def ui_train_finished(self, para):
