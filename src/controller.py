@@ -24,13 +24,13 @@ class Controller:
     def init_state(self):
         # 初始化状态、连接信号槽函数
         self.state = State()
-        self.state.signal_module_loaded.connect(self.on_torch_loaded)
-        self.state.load_torch()
+        self.state.signal_module_loaded.connect(self.on_modules_loaded)
+        self.state.load_modules()
         self.view.vis_config(self.state.ui_para.data)
         self.view.connect_slots()
         self.connect_slots()
 
-    def on_torch_loaded(self):
+    def on_modules_loaded(self):
         self.state.loader_thread.quit()
         self.view.show_status_message("模组加载完成", 1000)
 
@@ -90,22 +90,22 @@ class Controller:
         updated_config = self.view.update_config(self.state.ui_para.data)
         self.state.on_close_window(updated_config)
 
-    def on_connect_nc(self, para):
+    def on_connect_nc(self, mqtt_ip, mqtt_port, sn):
         self.view.setCursor(Qt.CursorShape.WaitCursor)
-        self.state.connect_nc(para)
+        self.state.connect_nc(mqtt_ip, mqtt_port, sn)
         self.view.setCursor(Qt.CursorShape.ArrowCursor)
 
     def on_disconnect_nc(self):
         self.state.disconnect_nc()
         self.view.show_status_message("机床断连", 2000)
 
-    def on_connect_nc_status(self, flag):
-        if flag[0]:
+    def on_connect_nc_status(self, success, info_str):
+        if success:
             self.view.sample_page.nc_link_widget.set_btn_disconnect()
             self.view.show_status_message("连接机床成功", 3000)
         else:
             self.view.sample_page.nc_link_widget.btn_connect_nc.setText("重新连接")
-            self.view.show_pop_message(f"{flag[1]}")
+            self.view.show_pop_message(info_str)
 
     def on_connect_tem_card(self, para):
         self.view.setCursor(Qt.CursorShape.BusyCursor)
@@ -116,17 +116,17 @@ class Controller:
         self.state.disconnect_tem_card()
         self.view.show_status_message("采集卡断连", 2000)
 
-    def on_connect_tem_card_status(self, flag):
-        if flag[0]:
+    def on_connect_tem_card_status(self, success, info_str):
+        if success:
             self.view.sample_page.tem_card_widget.set_btn_disconnect()
             self.view.show_status_message("连接采集卡成功", 3000)
         else:
             self.view.sample_page.tem_card_widget.btn_connect.setText("重新连接")
-            self.view.show_pop_message(f"{flag[1]}")
+            self.view.show_pop_message(info_str)
 
-    def on_open_port(self, para):
+    def on_open_port(self, com, baud_rate):
         self.view.setCursor(Qt.CursorShape.WaitCursor)
-        self.state.open_port(para)
+        self.state.open_port(com, baud_rate)
         self.view.setCursor(Qt.CursorShape.ArrowCursor)
 
     def on_close_port(self):
@@ -217,7 +217,7 @@ class Controller:
         self.view.setCursor(Qt.CursorShape.BusyCursor)
         flag = self.state.get_data(para)
         if flag:
-            # 只要导入了数据, 后面的按钮才能启用
+            # 只有导入了数据, 后面的一些按钮才能启用
             self.view.tsp_page.import_data.btn_plot_file.setEnabled(True)
             self.view.tsp_page.tsp_config.btn_tra_tsp.setEnabled(True)
             self.view.tsp_page.tsp_config.btn_ga_tsp.setEnabled(True)

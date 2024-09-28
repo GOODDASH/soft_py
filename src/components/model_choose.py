@@ -143,7 +143,7 @@ class ModelChoose(QGroupBox):
 
         return edge_index
 
-    def adjust_stacked(self, index):
+    def adjust_stacked(self, _index):
         current_widget = self.model_stacked.currentWidget()
         if current_widget:
             height = current_widget.sizeHint().height()

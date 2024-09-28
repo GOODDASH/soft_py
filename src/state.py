@@ -20,8 +20,8 @@ RPM_AVG_INTER = 60  # 默认统计RPM平均值间隔(s)
 class State(QObject):
     signal_module_loaded = Signal()
 
-    signal_connect_nc_status = Signal(list)
-    signal_connect_tem_card_status = Signal(list)
+    signal_connect_nc_status = Signal(bool, str)
+    signal_connect_tem_card_status = Signal(bool, str)
     signal_open_port_status = Signal(bool)
 
     error_assert_temp_card_not_none = Signal(str)
@@ -134,7 +134,7 @@ class State(QObject):
         self.ui_para = YamlHandler("res/config.yml")
         self.ui_para.read()
 
-    def load_torch(self):
+    def load_modules(self):
         self.loader_thread = ModuleLoaderThread()
         self.loader_thread.module_loaded.connect(self.signal_module_loaded)
         self.loader_thread.start()
@@ -147,14 +147,14 @@ class State(QObject):
         self.close_port()
         self.stop_compen()
 
-    def connect_nc(self, para):
+    def connect_nc(self, mqtt_ip, mqtt_port, sn):
         from src.core.nc_link import NCLink
 
-        self.nc_client = NCLink(mqtt_ip=para[0], mqtt_port=para[1], sn=para[2], client_id="DASH")
+        self.nc_client = NCLink(mqtt_ip, mqtt_port, sn, client_id="DASH")
         success, info_str = self.nc_client.connect()
         if not success:
             self.nc_client = None
-        self.signal_connect_nc_status.emit([success, info_str])
+        self.signal_connect_nc_status.emit(success, info_str)
 
     def disconnect_nc(self):
         if self.nc_client:
@@ -168,20 +168,20 @@ class State(QObject):
         success, info_str = self.tem_modbus_client.connect_all()
         if not success:
             self.tem_modbus_client = None
-        self.signal_connect_tem_card_status.emit([success, info_str])
+        self.signal_connect_tem_card_status.emit(success, info_str)
 
     def disconnect_tem_card(self):
         if self.tem_modbus_client:
             self.tem_modbus_client.close_all()
             self.tem_modbus_client = None
 
-    def open_port(self, para):
+    def open_port(self, com, baud_rate):
         from src.core.serial_port_reader import SerialPortReader
 
         if self.serial_port_client:
             self.serial_port_client.stop()
         try:
-            self.serial_port_client = SerialPortReader(port=para[0], baud_rate=para[1])
+            self.serial_port_client = SerialPortReader(port=com, baud_rate=baud_rate)
             self.signal_open_port_status.emit(True)
         except:
             self.serial_port_client = None

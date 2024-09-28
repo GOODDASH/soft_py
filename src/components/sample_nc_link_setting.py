@@ -13,7 +13,7 @@ from PyQt5.QtGui import QIntValidator
 
 
 class NCLinkSetting(QGroupBox):
-    signal_connect_nc = Signal(list)
+    signal_connect_nc = Signal(str, int, str)
     signal_disconnect_nc = Signal()
 
     def __init__(self, parent=None) -> None:
@@ -46,10 +46,10 @@ class NCLinkSetting(QGroupBox):
 
     def on_btn_connect_nc(self):
         mqtt_ip: str = self.edit_mqtt_ip.text()
-        nc_sn: str = self.edit_nc_SN.text()
+        sn: str = self.edit_nc_SN.text()
         try:
             mqtt_port: int = int(self.edit_mqtt_port.text())
-            self.signal_connect_nc.emit([mqtt_ip, mqtt_port, nc_sn])
+            self.signal_connect_nc.emit(mqtt_ip, mqtt_port, sn)
         except ValueError:
             QMessageBox.warning(self, "警告", "请输入正确的参数")
 

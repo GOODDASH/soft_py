@@ -1,6 +1,10 @@
 .env/
 others/
 **/__pycache__/
+
+.vscode/
+dist/
+build/
 **.pth
 **.csv
-.vscode/
+**.spec

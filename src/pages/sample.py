@@ -22,11 +22,11 @@ from src.style.gui_const import SIDE_MIN_WIDTH
 
 
 class Sample(QWidget):
-    signal_connect_nc = Signal(list)
+    signal_connect_nc = Signal(str, int, str)
     signal_disconnect_nc = Signal()
     signal_connect_tem_card = Signal(list)
     signal_disconnect_tem_card = Signal()
-    signal_open_port = Signal(list)
+    signal_open_port = Signal(str, int)
     signal_close_port = Signal()
 
     signal_sample_save_path = Signal(str)

@@ -46,8 +46,6 @@ class ModelTrainThread(QThread):
         # 单折训练步长
         num_epochs = self.train_para["epoch"]
 
-        
-
         # K折交叉验证
         for fold, (train_idx, val_idx) in enumerate(self.kf.split(self.datasets)):
             train_subset = torch.utils.data.Subset(self.datasets, train_idx)
@@ -79,7 +77,7 @@ class ModelTrainThread(QThread):
                 self.model.train()
                 total_train_loss = 0
                 for batch_data in train_dataloader:
-                    loss = self.get_loss(batch_data, criterion)
+                    _, loss = self.get_loss(batch_data, criterion)
                     total_train_loss += loss.item()
                     optimizer.zero_grad()
                     loss.backward()
@@ -94,13 +92,13 @@ class ModelTrainThread(QThread):
                 with torch.no_grad():
                     # 计算验证集平均损失值
                     for batch_data in val_dataloader:
-                        loss = self.get_loss(batch_data, criterion)
+                        _, loss = self.get_loss(batch_data, criterion)
                         total_val_loss += loss.item()
                     # 计算整体数据的预测值和损失值
                     for batch_data in test_dataloader:
-                        pred, loss = self.get_loss(batch_data, criterion, return_pred=True)
+                        pred, loss = self.get_loss(batch_data, criterion)
                         test_loss = loss.item()
-                    
+
                 avg_val_loss = total_val_loss / val_dataloader_num
 
                 # 发送训练过程中的参数到主线程
@@ -176,14 +174,13 @@ class ModelTrainThread(QThread):
                 )
         return scheduler
 
-    def get_loss(self, batch_data, criterion, return_pred: bool = False):
+    def get_loss(self, batch_data, criterion):
         """
-        计算损失值
+        返回模型输出和损失值
         -----
         paras:
         - batch_data: 训练数据
         - criterion: 损失函数
-        - return_pred: 是否返回预测值, 默认只返回损失值
         """
         if self.dataloader is GeometricDataLoader:
             outputs = self.model(batch_data)
@@ -193,10 +190,7 @@ class ModelTrainThread(QThread):
             outputs = self.model(batch_X)
             loss = criterion(outputs, batch_y)
 
-        if return_pred:
-            return outputs, loss
-        else:
-            return loss
+        return outputs, loss
 
     def stop(self):
         self.running = False

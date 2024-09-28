@@ -128,7 +128,6 @@ black --line-length 100 ./src/
 
 - 添加模型名称:
   `__init__`下添加，例如`self.model_type.addItem("BPNN")`
-
 - 界面添加模型所需参数的输入：
 `create_model_type_widget`方法下添加相应的参数`widget`, 并添加到`model_stacked`
 - 添加更新模型显示条件分支：
@@ -167,5 +166,6 @@ black --line-length 100 ./src/
 
 ### 2.5 调试软件
 
+- 模拟实际机床的消息响应，在安装好并启动mosquitto的服务后，新建当前虚拟环境的终端运行`fake_nc.py`
 - 采集卡(Modbus TCP)用`Modbus Slave`进行调试，[Modbus Slave](https://filecr.com/windows/modbus-slave/)
 - 量表用`com0com`(创建串口间的映射)和`PuTTY`(向串口输出值)进行调试，[com0com](https://sourceforge.net/projects/com0com/)，[PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html);

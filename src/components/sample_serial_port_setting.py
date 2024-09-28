@@ -12,7 +12,7 @@ from PyQt5.QtCore import pyqtSignal as Signal, Qt
 
 
 class SerialPortSetting(QGroupBox):
-    signal_open_port = Signal(list)
+    signal_open_port = Signal(str, int)
     signal_close_port = Signal()
 
     def __init__(self, parent=None) -> None:
@@ -45,7 +45,7 @@ class SerialPortSetting(QGroupBox):
         try:
             com: str = self.edit_port_num.text()
             baud_rate: int = int(self.edit_baud_rate.text())
-            self.signal_open_port.emit([com, baud_rate])
+            self.signal_open_port.emit(com, baud_rate)
         except ValueError:
             QMessageBox.warning(self, "警告", "请输入正确的参数")
 
