@@ -4,10 +4,8 @@
 
 - 安装`更纱黑体`字体，[下载链接](https://mirrors.tuna.tsinghua.edu.cn/github-release/be5invis/Sarasa-Gothic/Sarasa%20Gothic%2C%20Version%201.0.21/SarasaUiSC-TTF-1.0.21.7z)
 
-- 安装虚拟环境库
-```bash
-pip install virtualenv
-```
+- 安装[python3.11.9](https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe)，确保当前环境变量下的python是3.11.9版本
+
 - 在当前目录创建虚拟环境，位置在`.env`文件夹
 ```bash
 python -m venv .env
@@ -22,10 +20,10 @@ pip install -r requirements.txt
 ```
 - 运行程序
 ```bash
-.env\Scripts\python.exe .\main.py   
+.env\Scripts\python.exe main.py   
 ```
 
-如果安装完字体, `matplotlib`还是提示缺失字体，删除`C:\Users\xxx\.matplotlib`文件夹下的所有文件后重试（字体缓存）
+如果安装完字体, `matplotlib`还是提示缺失字体，删除`C:\Users\xxx\.matplotlib`文件夹下的所有文件后重试
 
 #### 1.2. 待完成事项
 
@@ -126,8 +124,6 @@ black --line-length 100 ./src/
 
 在`src\components\model_choose.py`中：
 
-- 添加模型名称:
-  `__init__`下添加，例如`self.model_type.addItem("BPNN")`
 - 界面添加模型所需参数的输入：
 `create_model_type_widget`方法下添加相应的参数`widget`, 并添加到`model_stacked`
 - 添加更新模型显示条件分支：
@@ -137,35 +133,20 @@ black --line-length 100 ./src/
 
 #### 2.4.2 后端逻辑
 
-**导入模型：**
-
-在`src\state.py`下：
+`src\state.py`中：
 
 - 设置导入模型：
 `reset_model`方法下`match`分支添加模型实例化方法
-
-**训练相关：**
-
-在`src\state.py`下：
-
 - 创建训练数据集：
-  `get_datasets`方法下`match`分支添加模型训练数据集创建方法
+`get_datasets`方法下`match`分支添加模型训练数据集创建方法
 - 设置`DataLoader`（因为`torch_geometric`和`torch`的`DataLoader`是不兼容的）：
-  `get_data_loader`方法下确定用到的`DataLoader`
+`train_thread_start`方法下确定用到的`DataLoader`
 
-在`src\thread\model_train_thread.py`下：
+`src\thread\model_train_thread.py`(非必要)
 
 - 如果用到了除了`torch_geometric`和`torch`的`DataLoader`另外的`DataLoader`, 还需在`get_loss`方法中添加对应计算损失值的方法
 
-**补偿相关：**
-
-在`src\state.py`下：
-
-- 根据预测温升（加上历史温升）计算热误差：
-  `get_pred_err`方法下添加对应模型得到预测输出值的方法
-
 ### 2.5 调试软件
 
-- 模拟实际机床的消息响应，在安装好并启动mosquitto的服务后，新建当前虚拟环境的终端运行`fake_nc.py`
 - 采集卡(Modbus TCP)用`Modbus Slave`进行调试，[Modbus Slave](https://filecr.com/windows/modbus-slave/)
 - 量表用`com0com`(创建串口间的映射)和`PuTTY`(向串口输出值)进行调试，[com0com](https://sourceforge.net/projects/com0com/)，[PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html);
