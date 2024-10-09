@@ -817,49 +817,46 @@ class State(QObject):
         import torch
         from src.core.poly_least_squares import PolyLeastSquares
 
+        # 截取未来平均转速转换为tensor
+        rpm_tensor = self.get_rpm_tensor()
+        if rpm_tensor is None:
+            return
+        print(f"rpm_tensor.shape: {rpm_tensor.shape}")
+
         # 历史温度变化趋势转换为tensor
         his_tem_tensor = torch.tensor(self.his_rel_temp, dtype=torch.float32).unsqueeze(0)
         print(f"his_tem_tensor: \n {his_tem_tensor}")
 
-        # 未来平均转速转换为tensor
-        start_idx = self.compen_count * self.compen_interval
-        end_idx = (self.compen_count + 1) * self.compen_interval
-        print(f"start_idx: {start_idx}, end_idx: {end_idx}")
-        if end_idx <= len(self.sampled_rpm):
-            rpm_tensor = torch.tensor(
-                self.sampled_rpm[start_idx:end_idx], dtype=torch.float32
-            ).unsqueeze(0)
-        else:
-            print("未来平均转速数据不足, 不再更新参数")
-            return
-        print(f"rpm_tensor.shape: {rpm_tensor.shape}")
+        # 预测温升
+        pred_temp_rise_tensor = self.tem_model(his_tem_tensor, rpm_tensor)
+        print(f"pred_temp_rise: {pred_temp_rise_tensor}")
 
-        # 预测温度
-        pred_temp_rise = self.tem_model(his_tem_tensor, rpm_tensor)
-        print(f"pred_temp_rise: {pred_temp_rise}")
-
-        pred_err = self.get_pred_err(pred_temp_rise, his_tem_tensor)
-        if pred_err is None:
+        # 预测热误差
+        pred_err_tensor = self.get_pred_err(pred_temp_rise_tensor, his_tem_tensor)
+        if pred_err_tensor is None:
             return
 
-        print(f"pred_err: {pred_err}")
+        print(f"pred_err_tensor: {pred_err_tensor}")
 
         # 温升tensor转换为numpy数组
-        pred_temp_rise_numpy = pred_temp_rise.squeeze(0).detach().numpy()
+        pred_temp_rise_numpy = pred_temp_rise_tensor.squeeze(0).detach().numpy()
 
         # 转换为绝对温度
         self.pred_temp_numpy = pred_temp_rise_numpy + np.array(self.init_abs_temp)
-        self.pred_err_numpy = pred_err.squeeze(0).detach().numpy()
+
+        # 热误差tensor转换为numpy数组
+        self.pred_err_numpy = pred_err_tensor.squeeze(0).detach().numpy()
         print(f"self.pred_temp_numpy.shape: {self.pred_temp_numpy.shape}")
         print(f"self.pred_err_numpy.shape: {self.pred_err_numpy.shape}")
 
-        # 拟合参数
+        # 拟合代理模型
         fit_model = PolyLeastSquares(degree)
         fit_model.fit(self.pred_temp_numpy, self.pred_err_numpy)
 
         # 记录参数更新次数
         self.compen_count += 1
 
+        # 获取拟合参数
         self.coef_fit = fit_model.get_coefficients()
         print(f"self.coef_fit.shape: {self.coef_fit.shape}")
 
@@ -867,6 +864,26 @@ class State(QObject):
 
         # 通知界面显示拟合参数
         self.signal_fit_coef.emit([degree, self.coef_fit])
+
+    def get_rpm_tensor(self):
+        """
+        截取后续平均转速转换为tensor
+        """
+        import torch
+
+        # 截取未来平均转速转换为tensor
+        start_idx = self.compen_count * self.compen_interval
+        end_idx = (self.compen_count + 1) * self.compen_interval
+        print(f"start_idx: {start_idx}, end_idx: {end_idx}")
+        if end_idx <= len(self.sampled_rpm):
+            rpm_tensor = torch.tensor(
+                self.sampled_rpm[start_idx:end_idx], dtype=torch.float32
+            ).unsqueeze(0)
+
+            return rpm_tensor
+        else:
+            print("未来平均转速数据不足, 不再更新参数")
+            return None
 
     def get_pred_err(self, pred_temp_rise, his_tem_tensor):
         """
@@ -876,7 +893,7 @@ class State(QObject):
         from src.core.bpnn import BPNN
         from src.core.gat_lstm import GATLSTM
 
-        # 根据模型类型计算预测的热误差, 先用最简单的BPNN
+        # 根据模型类型计算预测的热误差
         if isinstance(self.err_model, BPNN):
             pred_err = self.err_model(pred_temp_rise)
 
@@ -895,5 +912,5 @@ class State(QObject):
 
             return pred_err
         else:
-            # 未知模型类型
+            # 未导入模型
             return None
